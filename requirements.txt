@@ -1,0 +1,10 @@
+streamlit
+openai
+anthropic
+requests
+python-dotenv
+PyPDF2
+Pillow
+pytesseract
+scikit-learn
+rank-bm25
