@@ -65,3 +65,29 @@ doc-validator/
     ├── bm25_retriever.py
     └── embedding_retriever.py
 ```
+
+
+## 설치
+
+### 1. 필수 패키지 설치 (venv)
+
+```bash
+# 파이썬 가상환경 생성
+apk update
+apk add python3 py3-pip
+apk add build-base
+apk add --no-cache \
+build-base \
+python3-dev \
+py3-numpy-dev \
+gfortran \
+musl-dev \
+pkgconf \
+openblas-dev \
+lapack-dev \
+git \
+tesseract-ocr \
+tesseract-ocr-data-kor
+
+python -m venv venv
+pip install -r requirements.txt
