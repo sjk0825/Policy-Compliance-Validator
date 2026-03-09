@@ -1,4 +1,4 @@
-# 문서 검증기 (Document Validator)
+### 문서 검증기 (Document Validator)
 
 LLM을 사용하여 사용자가 작성한 문서를 가이드라인과 비교하여 실시간으로 검증해주는 도구입니다.
 
