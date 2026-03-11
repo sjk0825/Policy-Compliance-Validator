@@ -8,3 +8,5 @@ Pillow
 pytesseract
 scikit-learn
 rank-bm25
+packaging
+numpy

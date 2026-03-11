@@ -61,3 +61,24 @@ class ClaudeLLM(BaseLLM):
 
     def get_provider_name(self) -> str:
         return "Claude"
+
+    def chat(self, message: str, guidelines: str) -> str:
+        prompt = f"""당신은 문서 검증 전문가입니다.
+사용자의 질문에 대해 주어진 가이드라인을 바탕으로 답변해 주세요.
+
+**가이드라인:**
+{guidelines}
+
+**사용자 질문:**
+{message}
+
+가이드라인을 참고하여 정확하고 도움이 되는 답변을 해주세요."""
+
+        response = self.client.messages.create(
+            model="claude-3-5-haiku-20241022",
+            max_tokens=1024,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.content[0].text

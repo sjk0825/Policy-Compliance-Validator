@@ -12,5 +12,9 @@ class BaseLLM(ABC):
         pass
 
     @abstractmethod
+    def chat(self, message: str, guidelines: str) -> str:
+        pass
+
+    @abstractmethod
     def get_provider_name(self) -> str:
         pass

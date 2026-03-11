@@ -97,3 +97,42 @@ class VLLMClient(BaseLLM):
 
     def get_provider_name(self) -> str:
         return "vLLM"
+
+    def chat(self, message: str, guidelines: str) -> str:
+        prompt = f"""당신은 문서 검증 전문가입니다.
+사용자의 질문에 대해 주어진 가이드라인을 바탕으로 답변해 주세요.
+
+**가이드라인:**
+{guidelines}
+
+**사용자 질문:**
+{message}
+
+가이드라인을 참고하여 정확하고 도움이 되는 답변을 해주세요."""
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": "llama-3.1-8b-instruct",
+            "messages": [
+                {"role": "system", "content": "당신은 문서 검증 전문가입니다."},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.3
+        }
+
+        response = requests.post(
+            f"{self.base_url}/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=60
+        )
+        
+        if response.status_code != 200:
+            return f"Error: {response.status_code} - {response.text}"
+        
+        result = response.json()
+        return result["choices"][0]["message"]["content"]

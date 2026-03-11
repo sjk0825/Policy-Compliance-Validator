@@ -1,7 +1,26 @@
 import streamlit as st
+import os
+import logging
+from datetime import datetime
 from llm import get_llm_client
 from utils import extract_text_from_file
 from retrieval import TfidfRetriever, BM25Retriever
+
+
+LOG_DIR = "logs"
+LOG_FILE = os.path.join(LOG_DIR, "streamlit_errors.log")
+
+os.makedirs(LOG_DIR, exist_ok=True)
+
+logging.basicConfig(
+    level=logging.ERROR,
+    format='[%(asctime)s] %(levelname)s: %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 st.set_page_config(page_title="문서 검증기", layout="wide")
@@ -20,6 +39,8 @@ if 'retriever' not in st.session_state:
     st.session_state.retriever = None
 if 'guideline_chunks' not in st.session_state:
     st.session_state.guideline_chunks = None
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
 
 
 def chunk_text(text: str, chunk_size: int = 500) -> list:
@@ -61,6 +82,7 @@ def generate_plan(text: str, guidelines: str, llm_client):
         result = llm_client.plan(text, guidelines)
         st.session_state.plan_result = result
     except Exception as e:
+        logger.error(f"Plan 생성 오류: {str(e)}", exc_info=True)
         st.session_state.plan_result = f"오류: {str(e)}"
 
 
@@ -72,7 +94,43 @@ def validate_document(text: str, guidelines: str, llm_client):
         result = llm_client.validate(text, guidelines)
         st.session_state.validation_result = result
     except Exception as e:
+        logger.error(f"문서 검증 오류: {str(e)}", exc_info=True)
         st.session_state.validation_result = f"오류: {str(e)}"
+
+
+def handle_speaker1_message(message: str):
+    if message.strip():
+        st.session_state.chat_history.append({
+            "role": "speaker_1",
+            "content": message,
+            "timestamp": len(st.session_state.chat_history)
+        })
+
+
+def handle_speaker2_message(message: str, llm_client, guidelines: str):
+    if message.strip() and llm_client and guidelines:
+        st.session_state.chat_history.append({
+            "role": "speaker_2",
+            "content": message,
+            "timestamp": len(st.session_state.chat_history)
+        })
+        
+        try:
+            response = llm_client.chat(message, guidelines)
+            st.session_state.chat_history.append({
+                "role": "speaker_2",
+                "content": response,
+                "timestamp": len(st.session_state.chat_history),
+                "is_response": True
+            })
+        except Exception as e:
+            logger.error(f"Chat 응답 오류: {str(e)}", exc_info=True)
+            st.session_state.chat_history.append({
+                "role": "speaker_2",
+                "content": f"오류: {str(e)}",
+                "timestamp": len(st.session_state.chat_history),
+                "is_response": True
+            })
 
 
 st.title("📝 문서 검증기")
@@ -146,54 +204,54 @@ with st.sidebar:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.header("문서 작성")
+    st.header("대화")
     
-    user_text = st.text_area(
-        "문서를 작성해 주세요...",
-        height=500,
-        key="user_text"
-    )
+    speaker1_col, speaker2_col = st.columns(2)
     
-    if plan_mode and st.button("계획 생성", type="secondary") and user_text and st.session_state.guidelines and st.session_state.llm_client:
-        generate_plan(user_text, st.session_state.guidelines, st.session_state.llm_client)
+    with speaker1_col:
+        st.subheader("Speaker 1")
+        speaker1_input = st.text_area(
+            "입력...",
+            height=150,
+            key="speaker1_input"
+        )
+        if st.button("전송", key="speaker1_send", use_container_width=True):
+            handle_speaker1_message(speaker1_input)
+            st.rerun()
     
-    validate_btn = st.button("검증하기", type="primary")
-    
-    if validate_btn and user_text and st.session_state.guidelines and st.session_state.llm_client:
-        if plan_mode and st.session_state.plan_result:
-            guidelines_to_use = st.session_state.guidelines
-            if retrieval_mode and st.session_state.retriever:
-                retrieved = run_retrieval(
-                    user_text + "\n\n" + st.session_state.plan_result,
-                    st.session_state.retriever,
-                    st.session_state.guideline_chunks,
-                    top_k
-                )
-                if retrieved:
-                    st.session_state.retrieval_result = retrieved
-                    guidelines_to_use = "\n\n".join([r["text"] for r in retrieved])
-            
-            validate_document(user_text, guidelines_to_use, st.session_state.llm_client)
-        elif retrieval_mode and st.session_state.retriever:
-            retrieved = run_retrieval(
-                user_text,
-                st.session_state.retriever,
-                st.session_state.guideline_chunks,
-                top_k
-            )
-            if retrieved:
-                st.session_state.retrieval_result = retrieved
-                guidelines_to_use = "\n\n".join([r["text"] for r in retrieved])
-                validate_document(user_text, guidelines_to_use, st.session_state.llm_client)
+    with speaker2_col:
+        st.subheader("Speaker 2 (가이드라인 적용)")
+        speaker2_input = st.text_area(
+            "입력...",
+            height=150,
+            key="speaker2_input"
+        )
+        if st.button("전송", key="speaker2_send", use_container_width=True):
+            if not st.session_state.llm_client:
+                st.error("먼저 사이드바에서 LLM을 설정해 주세요.")
+            elif not st.session_state.guidelines:
+                st.error("가이드라인 파일을 업로드해 주세요.")
             else:
-                validate_document(user_text, st.session_state.guidelines, st.session_state.llm_client)
-        else:
-            validate_document(user_text, st.session_state.guidelines, st.session_state.llm_client)
+                handle_speaker2_message(speaker2_input, st.session_state.llm_client, st.session_state.guidelines)
+                st.rerun()
     
-    elif not st.session_state.llm_client:
-        st.warning("먼저 사이드바에서 LLM을 설정해 주세요.")
-    elif not st.session_state.guidelines:
-        st.warning("먼저 가이드라인 파일을 업로드해 주세요.")
+    st.divider()
+    
+    if st.button("대화 초기화"):
+        st.session_state.chat_history = []
+        st.rerun()
+    
+    st.subheader("대화 기록")
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "speaker_1":
+            with st.chat_message("user", avatar="🧑"):
+                st.markdown(f"**Speaker 1:** {msg['content']}")
+        elif msg.get("is_response"):
+            with st.chat_message("assistant", avatar="🤖"):
+                st.markdown(f"**Speaker 2 (응답):** {msg['content']}")
+        else:
+            with st.chat_message("user", avatar="🧑"):
+                st.markdown(f"**Speaker 2:** {msg['content']}")
 
 with col2:
     st.header("검증 결과")
