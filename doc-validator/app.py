@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from llm import get_llm_client
 from utils import extract_text_from_file
-from retrieval import TfidfRetriever, BM25Retriever
+from retrieval import TfidfRetriever, BM25Retriever, MilvusRetriever
 
 
 LOG_DIR = "logs"
@@ -41,6 +41,8 @@ if 'guideline_chunks' not in st.session_state:
     st.session_state.guideline_chunks = None
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
+if 'openai_api_key' not in st.session_state:
+    st.session_state.openai_api_key = None
 
 
 def chunk_text(text: str, chunk_size: int = 500) -> list:
@@ -51,11 +53,13 @@ def chunk_text(text: str, chunk_size: int = 500) -> list:
     return chunks
 
 
-def create_retriever(algorithm: str):
+def create_retriever(algorithm: str, api_key: str | None = None):
     if algorithm == "TF-IDF":
         return TfidfRetriever()
     elif algorithm == "BM25":
         return BM25Retriever()
+    elif algorithm == "Milvus" and api_key:
+        return MilvusRetriever(api_key=api_key)
     return None
 
 
@@ -189,17 +193,24 @@ with st.sidebar:
     if retrieval_mode:
         retriever_algorithm = st.selectbox(
             "检索 알고리즘",
-            ["TF-IDF", "BM25"]
+            ["TF-IDF", "BM25", "Milvus"]
         )
+        
+        milvus_api_key = None
+        if retriever_algorithm == "Milvus":
+            milvus_api_key = st.text_input("OpenAI API Key (for Embedding)", type="password")
         
         top_k = st.slider("검색 결과 수", min_value=1, max_value=10, value=3)
         
         if st.button("Retrieval 초기화"):
-            retriever = create_retriever(retriever_algorithm)
-            if retriever and st.session_state.guideline_chunks:
-                retriever.index(st.session_state.guideline_chunks)
-                st.session_state.retriever = retriever
-                st.success("Retrieval 초기화 완료!")
+            if retriever_algorithm == "Milvus" and not milvus_api_key:
+                st.error("Milvus를 사용하려면 OpenAI API Key가 필요합니다.")
+            else:
+                retriever = create_retriever(retriever_algorithm, milvus_api_key)
+                if retriever and st.session_state.guideline_chunks:
+                    retriever.index(st.session_state.guideline_chunks)
+                    st.session_state.retriever = retriever
+                    st.success("Retrieval 초기화 완료!")
 
 col1, col2 = st.columns([2, 1])
 

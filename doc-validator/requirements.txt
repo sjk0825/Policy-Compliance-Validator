@@ -10,3 +10,4 @@ scikit-learn
 rank-bm25
 packaging
 numpy
+pymilvus
