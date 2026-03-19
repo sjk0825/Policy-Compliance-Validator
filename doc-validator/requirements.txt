@@ -11,3 +11,7 @@ rank-bm25
 packaging
 numpy
 pymilvus
+finance-datareader
+plotly
+koreanize-matplotlib
+finance_datareader
