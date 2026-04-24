@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: doc-validator
+  namespace: doc-validator
+spec:
+  selector:
+    app: doc-validator
+  type: ClusterIP
+  ports:
+    - port: 8501
+      targetPort: 8501

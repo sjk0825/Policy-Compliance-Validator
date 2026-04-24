@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: doc-validator-config
+  namespace: doc-validator
+data:
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  MILVUS_HOST: "milvus"
+  MILVUS_PORT: "19530"
+  MILVUS_DB_PATH: "/app/milvus.db"
+  LLM_PROVIDER: "openai"
+  LLM_MODEL: "gpt-4o-mini"
+  LLM_TEMPERATURE: "0.3"
+  RETRIEVER_ALGORITHM: "milvus"
+  LOG_LEVEL: "ERROR"
+  LOG_DIR: "/app/logs"
