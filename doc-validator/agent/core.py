@@ -1,4 +1,7 @@
+import logging
 from typing import Optional, Dict, Any, List, Type
+
+logger = logging.getLogger(__name__)
 from .state import AgentState, ExecutionContext, AgentResponse
 from .brain import Brain
 from .memory import ConversationMemory, DocumentMemory, ValidationMemory

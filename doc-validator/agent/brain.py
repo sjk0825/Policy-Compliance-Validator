@@ -1,61 +1,66 @@
-from typing import Optional, List, Dict, Any
-from dataclasses import dataclass
+from typing import Optional, List, Dict, Any, Union
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_core.outputs import ChatResult, ChatGeneration
+import os
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class LLMResponse:
-    content: str
-    raw_response: Any = None
-    model: str = ""
-    usage: Dict[str, int] = None
-
-    def __post_init__(self):
-        if self.usage is None:
-            self.usage = {}
-
-
-class Brain:
+class LangChainBrain:
     def __init__(
         self,
         provider: str,
-        api_key: str,
+        api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: str = "gpt-4o-mini",
         temperature: float = 0.3
     ):
         self.provider = provider
-        self.api_key = api_key
-        self.base_url = base_url
         self.model = model
         self.temperature = temperature
-        self._client = self._initialize_client()
+        self._llm = self._initialize_llm(api_key, base_url)
 
-    def _initialize_client(self):
+    def _initialize_llm(self, api_key: Optional[str], base_url: Optional[str]):
         if self.provider == "openai":
-            from openai import OpenAI
-            return OpenAI(api_key=self.api_key)
+            return ChatOpenAI(
+                model=self.model,
+                temperature=self.temperature,
+                api_key=api_key or os.getenv("OPENAI_API_KEY")
+            )
         elif self.provider == "claude":
-            return self._create_claude_client()
+            return ChatAnthropic(
+                model="claude-sonnet-4-20250514",
+                temperature=self.temperature,
+                api_key=api_key or os.getenv("ANTHROPIC_API_KEY"),
+                max_tokens=4096
+            )
         elif self.provider == "vllm":
-            return self._create_vllm_client()
+            return ChatOpenAI(
+                model=self.model,
+                temperature=self.temperature,
+                api_key=api_key or "dummy",
+                base_url=base_url or os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1")
+            )
         else:
             raise ValueError(f"Unknown provider: {self.provider}")
 
-    def _create_claude_client(self):
-        try:
-            from anthropic import Anthropic
-            return Anthropic(api_key=self.api_key)
-        except ImportError:
-            logger.warning("Anthropic not installed, Claude will use OpenAI fallback")
-            from openai import OpenAI
-            return OpenAI(api_key=self.api_key)
-
-    def _create_vllm_client(self):
-        from openai import OpenAI
-        return OpenAI(api_key=self.api_key, base_url=self.base_url or "http://localhost:8000/v1")
+    def _convert_messages(self, messages: List[Dict[str, str]]) -> List[BaseMessage]:
+        result = []
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role == "system":
+                result.append(SystemMessage(content=content))
+            elif role == "user":
+                result.append(HumanMessage(content=content))
+            elif role == "assistant":
+                result.append(AIMessage(content=content))
+            else:
+                result.append(HumanMessage(content=content))
+        return result
 
     def complete(
         self,
@@ -63,79 +68,25 @@ class Brain:
         system_prompt: Optional[str] = None,
         temperature: Optional[float] = None,
         max_tokens: int = 4096
-    ) -> LLMResponse:
-        temp = temperature if temperature is not None else self.temperature
-
-        if self.provider == "claude":
-            return self._claude_complete(messages, system_prompt, temp, max_tokens)
-        else:
-            return self._openai_complete(messages, system_prompt, temp, max_tokens)
-
-    def _openai_complete(
-        self,
-        messages: List[Dict[str, str]],
-        system_prompt: Optional[str],
-        temperature: float,
-        max_tokens: int
-    ) -> LLMResponse:
-        all_messages = []
+    ) -> "LLMResponse":
+        all_messages = self._convert_messages(messages)
+        
         if system_prompt:
-            all_messages.append({"role": "system", "content": system_prompt})
-        all_messages.extend(messages)
+            all_messages.insert(0, SystemMessage(content=system_prompt))
 
         try:
-            response = self._client.chat.completions.create(
-                model=self.model,
-                messages=all_messages,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
+            if temperature is not None and hasattr(self._llm, 'temperature'):
+                self._llm.temperature = temperature
 
+            response = self._llm.invoke(all_messages)
+            
             return LLMResponse(
-                content=response.choices[0].message.content,
+                content=response.content,
                 raw_response=response,
-                model=response.model,
-                usage={
-                    "prompt_tokens": response.usage.prompt_tokens,
-                    "completion_tokens": response.usage.completion_tokens,
-                    "total_tokens": response.usage.total_tokens
-                }
+                model=self.model
             )
         except Exception as e:
-            logger.error(f"OpenAI completion error: {e}")
-            raise
-
-    def _claude_complete(
-        self,
-        messages: List[Dict[str, str]],
-        system_prompt: Optional[str],
-        temperature: float,
-        max_tokens: int
-    ) -> LLMResponse:
-        try:
-            user_content = "\n".join(
-                f"{m['role']}: {m['content']}" for m in messages
-            )
-
-            response = self._client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=max_tokens,
-                temperature=temperature,
-                system=system_prompt or "",
-                messages=[{"role": "user", "content": user_content}]
-            )
-
-            return LLMResponse(
-                content=response.content[0].text,
-                raw_response=response,
-                model=response.model,
-                usage={
-                    "input_tokens": response.usage.input_tokens,
-                    "output_tokens": response.usage.output_tokens
-                }
-            )
-        except Exception as e:
-            logger.error(f"Claude completion error: {e}")
+            logger.error(f"LLM completion error: {e}")
             raise
 
     def validate(self, text: str, guidelines: str) -> str:
@@ -165,7 +116,7 @@ class Brain:
             message=message,
             guidelines=guidelines
         )
-        messages = history or []
+        messages = list(history) if history else []
         messages.append({"role": "user", "content": user})
         response = self.complete(messages, system)
         return response.content
@@ -173,3 +124,21 @@ class Brain:
     @property
     def provider_name(self) -> str:
         return self.provider
+
+    def bind_tools(self, tools: List[Any]):
+        self._llm = self._llm.bind_tools(tools)
+        return self
+
+
+class LLMResponse:
+    content: str
+    raw_response: Any = None
+    model: str = ""
+
+    def __init__(self, content: str, raw_response: Any = None, model: str = ""):
+        self.content = content
+        self.raw_response = raw_response
+        self.model = model
+
+
+Brain = LangChainBrain
