@@ -1,43 +1,8 @@
 import streamlit as st
-from utils.file_processor import extract_text_from_file
 import logging
 
 logger = logging.getLogger("doc_validator")
 
-
-def render_guideline_upload():
-    st.subheader("📋 가이드라인 업로드")
-
-    uploaded_file = st.file_uploader(
-        "가이드라인 문서 업로드 (PDF, TXT, JPG, PNG)",
-        type=["pdf", "txt", "jpg", "jpeg", "png"],
-        key="guideline_uploader"
-    )
-
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        if uploaded_file:
-            try:
-                text = extract_text_from_file(uploaded_file)
-                st.session_state.guidelines = text
-
-                chunks = [text[i:i+500] for i in range(0, len(text), 500)]
-                st.session_state.guideline_chunks = chunks
-
-                agent = st.session_state.get("agent")
-                if agent:
-                    agent.set_guidelines(text, chunks)
-
-                st.success(f"✅ 가이드라인 로드 완료! (총 {len(text)}자)")
-            except Exception as e:
-                st.error(f"파일 읽기 오류: {str(e)}")
-                logger.error(f"Guideline upload error: {e}", exc_info=True)
-
-    with col2:
-        if st.button("가이드라인 초기화", type="secondary", use_container_width=True):
-            st.session_state.guidelines = None
-            st.session_state.guideline_chunks = None
-            st.rerun()
 
 
 def render_agent_stats():
