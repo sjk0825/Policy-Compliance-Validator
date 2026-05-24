@@ -87,20 +87,27 @@ class AgentOrchestrator:
                 context.retrieved_context = self._retrieve_context(message)
                 context.tool_results["retrieval"] = context.retrieved_context
 
-            stock_result = self._try_stock_chart(message)
-            if stock_result:
+            stock_context = ""
+
+            comp_result = self._try_stock_comparison(message)
+            if comp_result:
                 context.state = AgentState.TOOL_CALLING
-                context.tool_results["stock_chart"] = stock_result
-                context.metadata["has_chart"] = stock_result.success
+                context.tool_results["stock_comparison"] = comp_result
+                context.metadata["has_chart"] = comp_result.success
+                if comp_result.success:
+                    stock_context = f"\n\n[주가 비교 데이터]\n{comp_result.data['summary']}"
+            else:
+                stock_result = self._try_stock_chart(message)
+                if stock_result:
+                    context.state = AgentState.TOOL_CALLING
+                    context.tool_results["stock_chart"] = stock_result
+                    context.metadata["has_chart"] = stock_result.success
+                    if stock_result.success:
+                        stock_context = f"\n\n[주식 차트 데이터]\n{stock_result.data['summary']}"
 
             context.state = AgentState.RESPONDING
 
             conversation_history = self.conversation_memory.get_messages_for_llm()
-
-            stock_context = ""
-            if stock_result and stock_result.success:
-                stock_context = f"\n\n[주식 차트 데이터]\n{stock_result.data['summary']}"
-
             augmented_message = message + stock_context
 
             response = self.brain.chat(
@@ -183,6 +190,83 @@ class AgentOrchestrator:
             return None
 
         return stock_tool.execute(stock_code=code, stock_name=name)
+
+    def _resolve_stock_code(self, token: str) -> tuple:
+        token = token.strip().upper()
+        KNOWN = {
+            '삼성전자': ('005930', '삼성전자'), '삼성': ('005930', '삼성전자'), 'SAMSUNG': ('005930', '삼성전자'),
+            '애플': ('AAPL', '애플'), 'APPLE': ('AAPL', '애플'),
+            'SK하이닉스': ('000660', 'SK하이닉스'), 'SK': ('000660', 'SK하이닉스'),
+            'LG': ('003550', 'LG'), 'LG전자': ('066570', 'LG전자'),
+            '네이버': ('035420', '네이버'), 'NAVER': ('035420', '네이버'),
+            '카카오': ('035720', '카카오'), 'KAKAO': ('035720', '카카오'),
+            '현대차': ('005380', '현대차'), '현대': ('005380', '현대차'),
+            '기아': ('000270', '기아'), 'KIA': ('000270', '기아'),
+            '셀트리온': ('068270', '셀트리온'),
+            '테슬라': ('TSLA', '테슬라'), 'TSLA': ('TSLA', 'TSLA'),
+            'MSFT': ('MSFT', 'MSFT'), '마이크로소프트': ('MSFT', 'MSFT'),
+            'GOOGL': ('GOOGL', 'GOOGL'), '구글': ('GOOGL', '구글'),
+            'AMZN': ('AMZN', 'AMZN'), '아마존': ('AMZN', '아마존'),
+            'META': ('META', 'META'), '메타': ('META', 'META'),
+            '엔비디아': ('NVDA', '엔비디아'), 'NVIDIA': ('NVDA', 'NVIDIA'),
+        }
+        if token in KNOWN:
+            return KNOWN[token]
+        if re.match(r'^[A-Z]{1,6}\d{0,4}$', token):
+            return (token, token)
+        if re.match(r'^\d{6}$', token):
+            return (token, token)
+        return (None, None)
+
+    def _try_stock_comparison(self, message: str) -> Optional[ToolResult]:
+        tool = self.tools.get("stock_comparison")
+        if not tool:
+            return None
+
+        has_compare_intent = bool(re.search(
+            r'(비교|compare|vs\.?|대비|랑\s|과\s|와\s|차이)', message, re.IGNORECASE
+        ))
+        if not has_compare_intent:
+            return None
+
+        codes, names = [], []
+        SKIP_WORDS = {'VS', 'V', 'S', 'A', '비교', 'COMPARE', '대비', '차이'}
+
+        tokens = re.split(r'[,;&\s]+', message)
+        for token in tokens:
+            clean = re.sub(r'(랑|이랑|과|와|는|은|을|를|이|가|의|도|만|부터|까지|에서)$', '', token)
+            if clean.upper() in SKIP_WORDS:
+                continue
+            code, name = self._resolve_stock_code(clean)
+            if code:
+                codes.append(code)
+                names.append(name)
+
+        seen = set()
+        unique = []
+        for c, n in zip(codes, names):
+            if c not in seen:
+                seen.add(c)
+                unique.append((c, n))
+        codes = [c for c, _ in unique]
+        names = [n for _, n in unique]
+
+        if len(codes) < 2:
+            return None
+
+        comp_days = 90
+        day_match = re.search(r'(\d+)\s*(일|주|개월|월|day|days)', message, re.IGNORECASE)
+        if day_match:
+            num = int(day_match.group(1))
+            unit = day_match.group(2)
+            if unit in ('주',):
+                comp_days = num * 7
+            elif unit in ('개월', '월'):
+                comp_days = num * 30
+            else:
+                comp_days = num
+
+        return tool.execute(stock_codes=codes, stock_names=names, days=comp_days)
 
     def validate(self, text: str) -> AgentResponse:
         context = ExecutionContext(user_message="Validate document")

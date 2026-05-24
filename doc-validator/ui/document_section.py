@@ -37,6 +37,10 @@ def render_conversation_panel():
                         if stock_result and stock_result.success:
                             components.html(stock_result.data["html"], height=550)
 
+                        comp_result = response.context.tool_results.get("stock_comparison")
+                        if comp_result and comp_result.success:
+                            components.html(comp_result.data["html"], height=550)
+
                         st.session_state.chat_history.append(
                             {"role": "assistant", "content": response.content}
                         )

@@ -5,6 +5,29 @@ from datetime import datetime, timedelta
 from .base import BaseTool, ToolResult, ToolDefinition, ToolCapability
 
 
+def fetch_stock_data(stock_code: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
+    import FinanceDataReader as fdr
+    df = fdr.DataReader(stock_code, start=start_date, end=end_date)
+    df = df.reset_index()
+    date_col = 'Date' if 'Date' in df.columns else df.columns[0]
+    df['Date'] = pd.to_datetime(df[date_col])
+    if date_col != 'Date':
+        df = df.drop(columns=[date_col])
+    col_map = {}
+    for c in df.columns:
+        c_lower = c.lower().strip()
+        if c_lower == 'open': col_map[c] = 'Open'
+        elif c_lower == 'high': col_map[c] = 'High'
+        elif c_lower == 'low': col_map[c] = 'Low'
+        elif c_lower == 'close': col_map[c] = 'Close'
+        elif c_lower == 'volume': col_map[c] = 'Volume'
+    df = df.rename(columns=col_map)
+    for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
+        if col not in df.columns:
+            df[col] = 0
+    return df
+
+
 class StockChartTool(BaseTool):
     def __init__(self):
         super().__init__()
@@ -56,26 +79,7 @@ class StockChartTool(BaseTool):
             return ToolResult(success=False, error=str(e))
 
     def _fetch_data(self, stock_code: str, start_date: datetime, end_date: datetime) -> pd.DataFrame:
-        import FinanceDataReader as fdr
-        df = fdr.DataReader(stock_code, start=start_date, end=end_date)
-        df = df.reset_index()
-        date_col = 'Date' if 'Date' in df.columns else df.columns[0]
-        df['Date'] = pd.to_datetime(df[date_col])
-        if date_col != 'Date':
-            df = df.drop(columns=[date_col])
-        col_map = {}
-        for c in df.columns:
-            c_lower = c.lower().strip()
-            if c_lower == 'open': col_map[c] = 'Open'
-            elif c_lower == 'high': col_map[c] = 'High'
-            elif c_lower == 'low': col_map[c] = 'Low'
-            elif c_lower == 'close': col_map[c] = 'Close'
-            elif c_lower == 'volume': col_map[c] = 'Volume'
-        df = df.rename(columns=col_map)
-        for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
-            if col not in df.columns:
-                df[col] = 0
-        return df
+        return fetch_stock_data(stock_code, start_date, end_date)
 
     def _create_chart(self, df: pd.DataFrame, stock_code: str, stock_name: str) -> str:
         fig = go.Figure()
