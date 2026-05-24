@@ -15,7 +15,6 @@ finance-datareader
 plotly
 koreanize-matplotlib
 finance_datareader
-exa-search
 redis
 langchain
 langchain-openai

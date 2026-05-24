@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from .base import BaseTool, ToolResult, ToolDefinition, ToolCapability
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 
 
 class WebSearchTool(BaseTool):
