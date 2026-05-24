@@ -2,7 +2,7 @@ import streamlit as st
 
 from services.agent_service import setup_logging, initialize_agent, build_retriever
 from agent.tools import RetrievalTool
-from ui.document_section import render_agent_stats, render_conversation_panel
+from ui.document_section import render_conversation_panel
 
 logger = setup_logging()
 
@@ -57,8 +57,5 @@ with tab1:
                 except Exception as e:
                     st.error(f"초기화 오류: {str(e)}")
                     logger.error(f"Agent 초기화 오류: {str(e)}", exc_info=True)
-
-    st.divider()
-    render_agent_stats()
 
 render_conversation_panel()

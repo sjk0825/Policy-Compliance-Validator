@@ -4,28 +4,6 @@ import logging
 logger = logging.getLogger("doc_validator")
 
 
-
-def render_agent_stats():
-    st.subheader("📊 Agent 통계")
-
-    if st.session_state.get("agent"):
-        stats = st.session_state.agent.get_statistics()
-
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("대화 메시지", stats["conversation"]["total_messages"])
-        with col2:
-            val_stats = stats.get("validation", {})
-            st.metric("검증 횟수", val_stats.get("total_validations", 0))
-        with col3:
-            st.metric("사용 도구", stats["tools"]["count"])
-        with col4:
-            brain_info = stats.get("brain", {})
-            st.metric("LLM", brain_info.get("provider", "N/A").upper())
-    else:
-        st.info("Agent가 초기화되지 않았습니다.")
-
-
 def render_conversation_panel():
     st.divider()
     st.header("💬 대화")
