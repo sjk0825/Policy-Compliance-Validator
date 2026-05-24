@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import logging
 
 logger = logging.getLogger("doc_validator")
@@ -31,6 +32,11 @@ def render_conversation_panel():
                     response = agent.execute(prompt, enable_retrieval=enable_retrieval)
                     if response.success:
                         st.markdown(response.content)
+
+                        stock_result = response.context.tool_results.get("stock_chart")
+                        if stock_result and stock_result.success:
+                            components.html(stock_result.data["html"], height=550)
+
                         st.session_state.chat_history.append(
                             {"role": "assistant", "content": response.content}
                         )

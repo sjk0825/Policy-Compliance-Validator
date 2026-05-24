@@ -11,6 +11,7 @@ class ToolCapability(Enum):
     WEB_SEARCH = "web_search"
     CALCULATION = "calculation"
     DOCUMENT_VALIDATION = "document_validation"
+    STOCK_CHART = "stock_chart"
 
 
 @dataclass

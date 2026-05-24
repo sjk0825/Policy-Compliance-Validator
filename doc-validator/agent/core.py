@@ -1,11 +1,12 @@
 import logging
+import re
 from typing import Optional, Dict, Any, List, Type
 
 logger = logging.getLogger(__name__)
 from .state import AgentState, ExecutionContext, AgentResponse
 from .brain import Brain
 from .memory import ConversationMemory, DocumentMemory, ValidationMemory
-from .tools import BaseTool, ToolResult
+from .tools import BaseTool, ToolResult, ToolCapability
 
 
 class AgentOrchestrator:
@@ -86,12 +87,24 @@ class AgentOrchestrator:
                 context.retrieved_context = self._retrieve_context(message)
                 context.tool_results["retrieval"] = context.retrieved_context
 
+            stock_result = self._try_stock_chart(message)
+            if stock_result:
+                context.state = AgentState.TOOL_CALLING
+                context.tool_results["stock_chart"] = stock_result
+                context.metadata["has_chart"] = stock_result.success
+
             context.state = AgentState.RESPONDING
 
             conversation_history = self.conversation_memory.get_messages_for_llm()
 
+            stock_context = ""
+            if stock_result and stock_result.success:
+                stock_context = f"\n\n[주식 차트 데이터]\n{stock_result.data['summary']}"
+
+            augmented_message = message + stock_context
+
             response = self.brain.chat(
-                message=message,
+                message=augmented_message,
                 guidelines=self._guidelines,
                 history=conversation_history
             )
@@ -118,6 +131,58 @@ class AgentOrchestrator:
                 context=context,
                 error=str(e)
             )
+
+    def _try_stock_chart(self, message: str) -> Optional[ToolResult]:
+        stock_tool = self.tools.get("stock_chart")
+        if not stock_tool:
+            return None
+
+        has_stock_intent = bool(re.search(
+            r'(주식|차트|주가|stock|chart|주가차트|증시)', message, re.IGNORECASE
+        ))
+        if not has_stock_intent:
+            return None
+
+        code_patterns = [
+            r'([A-Z]{1,6}\d{0,4})',      # AAPL, 005930, TSLA, MSFT
+            r'\b(\d{6})\b',               # 6-digit Korean stock codes
+        ]
+        code = None
+        for pat in code_patterns:
+            m = re.search(pat, message)
+            if m:
+                code = m.group(1).upper()
+                break
+
+        KNOWN_TICKERS = {
+            '삼성전자': '005930', '삼성': '005930', 'SAMSUNG': '005930',
+            '애플': 'AAPL', 'APPLE': 'AAPL',
+            'SK하이닉스': '000660', 'SK': '000660',
+            'LG': '003550', 'LG전자': '066570',
+            '네이버': '035420', 'NAVER': '035420',
+            '카카오': '035720', 'KAKAO': '035720',
+            '현대차': '005380', '현대': '005380',
+            '기아': '000270', 'KIA': '000270',
+            '셀트리온': '068270',
+            'TSLA': 'TSLA', '테슬라': 'TSLA',
+            'MSFT': 'MSFT', '마이크로소프트': 'MSFT',
+            'GOOGL': 'GOOGL', '구글': 'GOOGL',
+            'AMZN': 'AMZN', '아마존': 'AMZN',
+            'META': 'META', '메타': 'META',
+            'NVIDIA': 'NVDA', '엔비디아': 'NVDA',
+        }
+
+        name = code or ""
+        for keyword, ticker in KNOWN_TICKERS.items():
+            if keyword.lower() in message.lower():
+                code = ticker
+                name = keyword
+                break
+
+        if not code:
+            return None
+
+        return stock_tool.execute(stock_code=code, stock_name=name)
 
     def validate(self, text: str) -> AgentResponse:
         context = ExecutionContext(user_message="Validate document")

@@ -3,6 +3,7 @@ from .retrieval_tool import RetrievalTool
 from .file_tool import FileTool
 from .web_search_tool import WebSearchTool
 from .calculator_tool import CalculatorTool
+from .stock_chart_tool import StockChartTool
 
 __all__ = [
     "BaseTool",
@@ -13,4 +14,5 @@ __all__ = [
     "FileTool",
     "WebSearchTool",
     "CalculatorTool",
+    "StockChartTool",
 ]

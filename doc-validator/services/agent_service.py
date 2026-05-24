@@ -1,8 +1,9 @@
 import logging
 import sys
 import os
-from typing import Optional
+from typing import Optional, List
 from agent import AgentOrchestrator, Brain
+from agent.tools import BaseTool, StockChartTool
 
 
 def setup_logging() -> logging.Logger:
@@ -25,9 +26,15 @@ def setup_logging() -> logging.Logger:
     return logger
 
 
-def initialize_agent(provider: str, api_key: str, base_url: Optional[str] = None) -> AgentOrchestrator:
+def initialize_agent(provider: str, api_key: str, base_url: Optional[str] = None,
+                     tools: Optional[List[BaseTool]] = None) -> AgentOrchestrator:
     brain = Brain(provider=provider, api_key=api_key, base_url=base_url)
     agent = AgentOrchestrator(brain=brain)
+
+    if tools:
+        for tool in tools:
+            agent.add_tool(tool)
+
     return agent
 
 

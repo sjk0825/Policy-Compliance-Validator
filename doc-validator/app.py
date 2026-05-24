@@ -1,7 +1,7 @@
 import streamlit as st
 
 from services.agent_service import setup_logging, initialize_agent, build_retriever
-from agent.tools import RetrievalTool
+from agent.tools import RetrievalTool, StockChartTool
 from ui.document_section import render_conversation_panel
 
 logger = setup_logging()
@@ -52,7 +52,10 @@ with tab1:
         else:
             with st.spinner("Agent 초기화 중..."):
                 try:
-                    st.session_state.agent = initialize_agent(provider, api_key, base_url)
+                    st.session_state.agent = initialize_agent(
+                        provider, api_key, base_url,
+                        tools=[StockChartTool()]
+                    )
                     st.success(f"Agent 초기화 완료! ({provider.upper()})")
                 except Exception as e:
                     st.error(f"초기화 오류: {str(e)}")
