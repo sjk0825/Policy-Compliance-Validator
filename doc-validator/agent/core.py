@@ -189,7 +189,8 @@ class AgentOrchestrator:
         if not code:
             return None
 
-        return stock_tool.execute(stock_code=code, stock_name=name)
+        days = self._parse_days(message, default=90)
+        return stock_tool.execute(stock_code=code, stock_name=name, days=days)
 
     def _resolve_stock_code(self, token: str) -> tuple:
         token = token.strip().upper()
@@ -217,6 +218,21 @@ class AgentOrchestrator:
         if re.match(r'^\d{6}$', token):
             return (token, token)
         return (None, None)
+
+    def _parse_days(self, message: str, default: int = 90) -> int:
+        day_match = re.search(r'(\d+)\s*(일|주|개월|월|년|year|month|week|day)', message, re.IGNORECASE)
+        if not day_match:
+            return default
+        num = int(day_match.group(1))
+        unit = day_match.group(2).lower()
+        if unit in ('년', 'year'):
+            return num * 365
+        elif unit in ('개월', '월', 'month'):
+            return num * 30
+        elif unit in ('주', 'week'):
+            return num * 7
+        else:
+            return num
 
     def _try_stock_comparison(self, message: str) -> Optional[ToolResult]:
         tool = self.tools.get("stock_comparison")
@@ -254,18 +270,7 @@ class AgentOrchestrator:
         if len(codes) < 2:
             return None
 
-        comp_days = 90
-        day_match = re.search(r'(\d+)\s*(일|주|개월|월|day|days)', message, re.IGNORECASE)
-        if day_match:
-            num = int(day_match.group(1))
-            unit = day_match.group(2)
-            if unit in ('주',):
-                comp_days = num * 7
-            elif unit in ('개월', '월'):
-                comp_days = num * 30
-            else:
-                comp_days = num
-
+        comp_days = self._parse_days(message, default=90)
         return tool.execute(stock_codes=codes, stock_names=names, days=comp_days)
 
     def validate(self, text: str) -> AgentResponse:
