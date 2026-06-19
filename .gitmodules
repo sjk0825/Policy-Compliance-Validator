@@ -1,0 +1,3 @@
+[submodule "vm-k8s"]
+	path = vm-k8s
+	url = https://github.com/sjk0825/vm-k8s.git
