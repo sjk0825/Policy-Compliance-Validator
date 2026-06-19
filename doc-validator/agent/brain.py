@@ -109,13 +109,21 @@ class LangChainBrain:
         response = self.complete([{"role": "user", "content": user}], system)
         return response.content
 
-    def chat(self, message: str, guidelines: str, history: List[Dict] = None) -> str:
+    def chat(self, message: str, guidelines: str, history: List[Dict] = None, srule: str = "") -> str:
         from .prompts import format_prompt
         system, user = format_prompt(
             "chat",
             message=message,
             guidelines=guidelines
         )
+        if srule and srule.strip():
+            system = (
+                f"{system}\n\n"
+                f"━━━ 사용자 행동 규칙 (srule) ━━━\n"
+                f"{srule.strip()}\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"위 규칙은 절대 원칙입니다. 모든 조언은 이 규칙을 기준으로 내려주세요."
+            )
         messages = list(history) if history else []
         messages.append({"role": "user", "content": user})
         response = self.complete(messages, system)

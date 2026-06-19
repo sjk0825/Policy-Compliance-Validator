@@ -25,6 +25,10 @@ class AgentOrchestrator:
         self.validation_memory = validation_memory or ValidationMemory()
         self._guidelines: str = ""
         self._guideline_chunks: List[str] = []
+        self._srule: str = ""
+
+    def set_srule(self, srule: str) -> None:
+        self._srule = srule or ""
 
     def add_tool(self, tool: BaseTool) -> None:
         self.tools[tool.name] = tool
@@ -113,7 +117,8 @@ class AgentOrchestrator:
             response = self.brain.chat(
                 message=augmented_message,
                 guidelines=self._guidelines,
-                history=conversation_history
+                history=conversation_history,
+                srule=self._srule
             )
 
             self.conversation_memory.add_user_message(message)
