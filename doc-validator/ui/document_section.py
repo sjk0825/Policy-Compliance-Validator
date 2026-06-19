@@ -1,13 +1,40 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import logging
+from datetime import datetime, timedelta
 
 logger = logging.getLogger("doc_validator")
 
 
+def _get_chart_context() -> str:
+    try:
+        import FinanceDataReader as fdr
+        end = datetime.now()
+        start = end - timedelta(days=90)
+        lines = []
+        for ticker in ["DBMF", "QQQ"]:
+            df = fdr.DataReader(ticker, start=start, end=end)
+            if df.empty:
+                continue
+            df = df.reset_index()
+            close = df["Close"]
+            latest = close.iloc[-1]
+            prev = close.iloc[-2]
+            pct = (latest - prev) / prev * 100
+            period_pct = (latest / close.iloc[0] - 1) * 100
+            lines.append(
+                f"{ticker}: 현재가 ${latest:.2f}, 전일대비 {pct:+.2f}%, "
+                f"3개월 누적 {period_pct:+.2f}%"
+            )
+        if lines:
+            return "[현재 시장 데이터 (자동 로드)]\n" + "\n".join(lines)
+    except Exception:
+        pass
+    return ""
+
+
 def render_conversation_panel():
     st.divider()
-    st.header("💬 대화")
 
     agent = st.session_state.get("agent")
     if not agent:
@@ -28,6 +55,12 @@ def render_conversation_panel():
         with st.chat_message("assistant"):
             with st.spinner("처리 중..."):
                 try:
+                    srule = st.session_state.get("srule_input", "")
+                    agent.set_srule(srule)
+
+                    chart_context = _get_chart_context()
+                    agent.set_guidelines(chart_context)
+
                     enable_retrieval = st.session_state.get("enable_retrieval", True)
                     response = agent.execute(prompt, enable_retrieval=enable_retrieval)
                     if response.success:
