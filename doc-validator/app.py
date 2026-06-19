@@ -3,6 +3,7 @@ import streamlit as st
 from services.agent_service import setup_logging, initialize_agent, build_retriever
 from agent.tools import RetrievalTool, StockChartTool, StockComparisonTool
 from ui.document_section import render_conversation_panel
+from ui.dbmf_sidebar import render_dbmf_sidebar
 
 logger = setup_logging()
 
@@ -22,6 +23,8 @@ _DEFAULTS = {
 for key, val in _DEFAULTS.items():
     if key not in st.session_state:
         st.session_state[key] = val
+
+render_dbmf_sidebar()
 
 st.title("문서 검증기 (Agent Mode)")
 
@@ -60,5 +63,13 @@ with tab1:
                 except Exception as e:
                     st.error(f"초기화 오류: {str(e)}")
                     logger.error(f"Agent 초기화 오류: {str(e)}", exc_info=True)
+
+st.divider()
+st.text_area(
+    "📋 srule",
+    value="DBMF는 역추세 자산이다. 시장 하락·변동성 확대 시 비중을 늘린다.\nQQQ는 추세 자산이다. 상승 모멘텀이 강할 때 비중을 늘린다.",
+    height=120,
+    key="srule_input",
+)
 
 render_conversation_panel()
