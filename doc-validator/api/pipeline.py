@@ -7,8 +7,17 @@ from typing import Any, Dict, List, Optional
 
 from .buildinfo import current_build
 
+try:
+    from engine import decide as engine_decide
+except Exception:  # 엔진을 못 불러와도 API는 떠야 한다
+    engine_decide = None
+
 # 판정 규칙 세트 버전. 규칙이 바뀌면 올린다 (과거 판정이 어떤 규칙으로 났는지 추적용).
-RULESET_VERSION = "stub-always-true.v0"
+RULESET_VERSION = "router+programs.v1"
+
+# fixture에 없는 종목이나 컨텍스트를 못 만드는 날짜가 들어올 수 있다.
+# 그때 쓰는 표시. 이 버전으로 남은 판정은 실제 판단이 아니다.
+FALLBACK_RULESET_VERSION = "unavailable-stub.v0"
 
 # 판정 1건을 채점할 지평(거래일 기준). 지금 하나로 못 박으면 나중에
 # "어느 주기에서 이 룰이 유효했나"를 사후에 물을 수 없다.
@@ -117,11 +126,96 @@ def _classify_market(symbol: str) -> str:
     return "UNKNOWN"
 
 
+def _run_engine(rec: "_Recorder", symbol: str, market: str, as_of: date) -> Dict[str, Any]:
+    """컨텍스트 → 라우팅 → 프로그램 실행. 각 단계를 그대로 기록한다.
+
+    엔진을 못 돌리는 경우(fixture에 없는 종목, 데이터 없는 날짜)에도 판정
+    자체는 돌려준다. 대신 스텁 규칙 세트로 표시해 실제 판단과 구분한다.
+    """
+    if engine_decide is None:
+        rec.record(
+            name="decide", title="판단 엔진",
+            description="engine 패키지를 불러오지 못해 스텁으로 처리한다.",
+            step_input={"symbol": symbol},
+            fn=lambda: {"available": False},
+        )
+        return {"result": True, "ruleset_version": FALLBACK_RULESET_VERSION}
+
+    try:
+        decision = engine_decide(symbol, as_of.isoformat())
+    except Exception as exc:
+        rec.record(
+            name="decide", title="판단 엔진",
+            description="컨텍스트를 만들지 못해 스텁으로 처리한다. fixture에 없는 종목이거나 해당 날짜 이전 데이터가 없는 경우다.",
+            step_input={"symbol": symbol, "as_of": as_of.isoformat()},
+            fn=lambda: {"available": False, "error": f"{type(exc).__name__}: {exc}"},
+        )
+        return {"result": True, "ruleset_version": FALLBACK_RULESET_VERSION}
+
+    ctx = decision.context
+    rec.record(
+        name="build_context",
+        title="컨텍스트 수집",
+        description=(
+            "기준일까지의 시세만 읽어 종목 상태와 시장 국면을 만든다. "
+            "기준일 이후 데이터는 저장소 계층에서 차단된다."
+        ),
+        step_input={"symbol": symbol, "as_of": as_of.isoformat()},
+        fn=lambda: {
+            "bars_available": ctx["coverage"]["bars_available"],
+            "last_trading_date": ctx["coverage"]["last_trading_date"],
+            "returns_pct": ctx["returns"],
+            "px_vs_sma60_pct": ctx["trend"]["px_vs_sma60_pct"],
+            "vol_ratio_20_60": ctx["volatility"]["vol_ratio_20_60"],
+            "drawdown_pct": (ctx.get("drawdown") or {}).get("pct"),
+            "regime_assets": list(ctx.get("regime", {})),
+            "warnings": ctx["warnings"],
+        },
+    )
+
+    route = decision.route
+    rec.record(
+        name="route",
+        title="프로그램 라우팅",
+        description=(
+            "LLM이 컨텍스트를 보고 어떤 판단 프로그램을 태울지 고른다. "
+            "LLM은 매수·매도를 판단하지 않는다. LLM을 못 쓰면 규칙 기반으로 떨어진다."
+        ),
+        step_input={"candidates": route["candidates"]},
+        fn=lambda: {
+            "program": route["program"], "reason": route["reason"],
+            "source": route["source"], "model": route["model"],
+            "latency_ms": route["latency_ms"], "error": route["error"],
+        },
+    )
+
+    pr = decision.program_result
+    rec.record(
+        name="evaluate",
+        title="프로그램 실행",
+        description=(
+            f"{pr['program']} 프로그램이 결정론적으로 판정한다. "
+            "여기서는 LLM을 쓰지 않는다."
+        ),
+        step_input={"program": pr["program"], "version": pr["version"]},
+        fn=lambda: {
+            "result": pr["decision"], "confidence": pr["confidence"],
+            "summary": pr["summary"], "signals": pr["signals"],
+        },
+    )
+
+    return {
+        "result": pr["decision"],
+        "ruleset_version": f"{RULESET_VERSION}:{pr['program']}.{pr['version']}",
+    }
+
+
 def run(ticker: str, as_of: Optional[date] = None) -> Judgement:
     """종목 하나에 대한 판정 파이프라인.
 
-    지금 evaluate 단계는 상수 True를 돌려주는 스텁이다. 실제 판정 로직이
-    들어갈 자리는 여기 한 곳뿐이고, 나머지 단계와 기록 구조는 그대로 쓴다.
+    컨텍스트 수집 → 라우팅 → 프로그램 실행 순서로 돈다. 각 단계의 입출력을
+    그대로 남기므로, 어떤 국면을 보고 어떤 프로그램이 골라져 무엇을 근거로
+    답이 나왔는지가 판정 기록에서 되짚어진다.
     """
     started = time.perf_counter()
     as_of = as_of or date.today()
@@ -143,24 +237,9 @@ def run(ticker: str, as_of: Optional[date] = None) -> Judgement:
         fn=lambda: {"market": _classify_market(normalized)},
     )["market"]
 
-    ruleset = rec.record(
-        name="load_ruleset",
-        title="규칙 세트 로드",
-        description="판정에 적용할 규칙 세트를 고정한다. 현재는 스텁 규칙 세트 하나뿐이다.",
-        step_input={"market": market},
-        fn=lambda: {"ruleset_version": RULESET_VERSION, "rules": ["always_true"]},
-    )["ruleset_version"]
-
-    result = rec.record(
-        name="evaluate",
-        title="규칙 평가",
-        description=(
-            "규칙 세트를 평가해 불리언 판정을 만든다. "
-            "stub-always-true.v0은 입력과 무관하게 True를 돌려준다 — 실제 판정 로직 미구현."
-        ),
-        step_input={"normalized_ticker": normalized, "market": market, "ruleset_version": ruleset},
-        fn=lambda: {"result": True, "reason": "stub ruleset: 무조건 True"},
-    )["result"]
+    decision = _run_engine(rec, normalized, market, as_of)
+    ruleset = decision["ruleset_version"]
+    result = decision["result"]
 
     judgement_id = rec.record(
         name="finalize",
