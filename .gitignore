@@ -16,6 +16,10 @@ doc-validator/fixtures/slices/**/*.csv
 # 내용은 커밋하지 않고 해시가 담긴 manifest만 남긴다.
 doc-validator/fixtures/router_inputs/*.json
 !doc-validator/fixtures/router_inputs/manifest.json
+
+# 백테스트 원자료. 요약(_summary.json)만 커밋한다.
+doc-validator/fixtures/backtests/*_heuristic.json
+doc-validator/fixtures/backtests/*_llm_sample.json
 doc-validator/logs/*.log
 
 .env

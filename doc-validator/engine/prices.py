@@ -4,6 +4,7 @@
 판단 로직이 미래를 보면 백테스트 결과 전체가 무의미해지므로, 차단은
 호출자 재량이 아니라 여기서 강제한다.
 """
+import bisect
 import csv
 import json
 from dataclasses import dataclass
@@ -67,6 +68,7 @@ class PriceStore:
             self._files[sym] = f if f.is_absolute() else ROOT / f
 
         self._cache: Dict[str, List[Bar]] = {}
+        self._dates: Dict[str, List[str]] = {}
 
     @staticmethod
     def _default_source() -> Path:
@@ -116,8 +118,16 @@ class PriceStore:
         return self._cache[symbol]
 
     def bars(self, symbol: str, as_of: str, lookback: Optional[int] = None) -> List[Bar]:
-        """기준일까지의 봉만 돌려준다. lookback을 주면 최근 N개로 자른다."""
-        bars = [b for b in self._all_bars(symbol) if b.date <= as_of]
+        """기준일까지의 봉만 돌려준다. lookback을 주면 최근 N개로 자른다.
+
+        백테스트는 같은 종목을 수백 번 다른 기준일로 훑는다. 매번 전체를
+        훑으면 느려서, 날짜가 정렬돼 있다는 점을 이용해 이분탐색으로 자른다.
+        """
+        all_bars = self._all_bars(symbol)
+        if symbol not in self._dates:
+            self._dates[symbol] = [b.date for b in all_bars]
+        cut = bisect.bisect_right(self._dates[symbol], as_of)
+        bars = all_bars[:cut]
         if bars and bars[-1].date > as_of:  # 방어적 확인
             raise AssertionError(f"미래 데이터 유출: {symbol} {bars[-1].date} > {as_of}")
         return bars[-lookback:] if lookback else bars
