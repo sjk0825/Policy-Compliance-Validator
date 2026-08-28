@@ -32,6 +32,7 @@ services:
 
   app:
     build: .
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
     ports:
       - "8501:8501"
     environment:
@@ -46,6 +47,22 @@ services:
       milvus:
         condition: service_healthy
     volumes:
+      - ./logs:/app/logs
+
+  api:
+    build:
+      context: .
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+        GIT_BRANCH: ${GIT_BRANCH:-unknown}
+    ports:
+      - "8000:8000"
+    environment:
+      - JUDGEMENT_DB_PATH=/app/data/judgements.db
+      - GIT_COMMIT=${GIT_COMMIT:-unknown}
+      - GIT_BRANCH=${GIT_BRANCH:-unknown}
+    volumes:
+      - ./data:/app/data
       - ./logs:/app/logs
 
 volumes:
