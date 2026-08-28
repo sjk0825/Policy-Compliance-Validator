@@ -49,13 +49,17 @@ def main() -> int:
     ap.add_argument("--years", type=int, default=2)
     ap.add_argument("--start", help="시작일을 직접 지정한다 (지정 시 seed는 쓰지 않는다)")
     ap.add_argument("--label", help="슬라이스 이름 접미사")
+    ap.add_argument("--manifest", help="쓸 매니페스트 (기본: fixtures/manifest.json)")
+    ap.add_argument("--no-data", action="store_true",
+                    help="CSV를 복사하지 않고 slice.json만 만든다. 시세는 원본에서 읽으므로 보통 이걸 쓴다.")
     args = ap.parse_args()
 
-    if not MANIFEST.exists():
+    if not (Path(args.manifest) if args.manifest else MANIFEST).exists():
         print("manifest.json이 없습니다. 먼저 scripts/fetch_fixtures.py를 실행하세요.")
         return 1
 
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    src_manifest = Path(args.manifest) if args.manifest else MANIFEST
+    manifest = json.loads(src_manifest.read_text(encoding="utf-8"))
     symbols = manifest["symbols"]
 
     span = timedelta(days=int(365.25 * args.years))
@@ -109,8 +113,9 @@ def main() -> int:
             continue
 
         dst = out_root / e["group"] / f"{e['symbol'].replace('/', '-')}.csv"
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        win.to_csv(dst, index=False, encoding="utf-8")
+        if not args.no_data:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            win.to_csv(dst, index=False, encoding="utf-8")
 
         dates = win["Date"].tolist()
         entries.append({
@@ -118,7 +123,7 @@ def main() -> int:
             "symbol": e["symbol"],
             "name": e.get("name"),
             "kind": e.get("kind"),
-            "file": str(dst.relative_to(ROOT)),
+            "file": str((src if args.no_data else dst).relative_to(ROOT)),
             "rows": len(win),
             "first_date": dates[0],
             "last_date": dates[-1],
@@ -149,6 +154,7 @@ def main() -> int:
             day
             for e in members
             for day in pd.read_csv(ROOT / e["file"], dtype={"Date": str})["Date"].tolist()
+            if start.isoformat() <= day <= end.isoformat()
         })
         weekly = decision_dates(pool)
         grids[market] = {
@@ -173,6 +179,7 @@ def main() -> int:
         "decision_grid": grids,
         "symbols": entries,
     }
+    out_root.mkdir(parents=True, exist_ok=True)
     (out_root / "slice.json").write_text(
         json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )

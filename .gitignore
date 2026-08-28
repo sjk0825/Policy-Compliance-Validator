@@ -9,6 +9,8 @@ doc-validator/data/*.db
 # 시세 fixture. 재생성 가능하므로 커밋하지 않는다.
 # 무엇을 언제 어디까지 받았는지는 fixtures/manifest.json이 기록한다.
 doc-validator/fixtures/data/
+# 확장 유니버스(718종목, 146MB). manifest만 커밋한다.
+doc-validator/fixtures/wide/**/*.csv
 # 슬라이스 CSV도 seed로 복원 가능하다. slice.json만 커밋한다.
 doc-validator/fixtures/slices/**/*.csv
 

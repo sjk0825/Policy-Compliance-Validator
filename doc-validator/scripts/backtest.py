@@ -229,6 +229,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--slice")
     ap.add_argument("--router", default="fitness", choices=["fitness", "chain", "both"])
+    ap.add_argument("--data", help="시세 소스 디렉터리 (기본: fixtures)")
     ap.add_argument("--llm-sample", type=int, default=0,
                     help="LLM 라우터로 비교할 무작위 표본 수 (0이면 안 함)")
     ap.add_argument("--sleep", type=float, default=14.0)
@@ -237,7 +238,7 @@ def main() -> int:
 
     slice_path = Path(args.slice) if args.slice else latest_slice()
     meta = json.loads(slice_path.read_text(encoding="utf-8"))
-    store = PriceStore()
+    store = PriceStore(Path(args.data) if args.data else None)
 
     print(f"슬라이스 {meta['slice_id']}  ({meta['start']} ~ {meta['end']})")
     print(f"종목 {meta['symbol_count']}개, 판정일 "
