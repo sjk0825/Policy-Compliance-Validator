@@ -1,6 +1,6 @@
 import json
 from html import escape
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .buildinfo import BuildInfo
 
@@ -68,6 +68,16 @@ pre {
   padding: .7rem .8rem; margin: 0; overflow-x: auto; font-size: .8rem;
 }
 .warn { color: var(--false); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th, td { text-align: right; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+     color: var(--muted); font-weight: 600; }
+td.hit { color: var(--true); font-weight: 600; }
+td.miss { color: var(--false); font-weight: 600; }
+td.na { color: var(--muted); }
+tr.primary td { background: var(--card); }
+.tw { overflow-x: auto; }
 footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line);
          color: var(--muted); font-size: .8rem; }
 footer a { color: var(--accent); }
@@ -101,7 +111,45 @@ def _steps_html(steps: List[Dict[str, Any]]) -> str:
     return '<ol class="steps">' + "".join(items) + "</ol>"
 
 
-def judgement_page(payload: Dict[str, Any], server_build: BuildInfo) -> str:
+def _outcomes_html(outcomes: List[Dict[str, Any]], default_horizon: int) -> str:
+    if not outcomes:
+        return '<p class="sub">아직 채점 슬롯이 없습니다.</p>'
+
+    rows = []
+    for o in outcomes:
+        h = o["horizon_days"]
+        primary = ' class="primary"' if h == default_horizon else ""
+        label = f'{h}거래일' + (" (기본)" if h == default_horizon else "")
+
+        if o["status"] == "scored":
+            hit_cls = "hit" if o["hit"] else "miss"
+            hit_txt = "적중" if o["hit"] else "실패"
+            ret = f'{o["return_pct"]:+.2f}%'
+            rows.append(
+                f"<tr{primary}><td>{escape(label)}</td>"
+                f'<td class="{hit_cls}">{hit_txt}</td><td>{ret}</td>'
+                f'<td class="mono">{escape(o["entry_date"] or "")}</td>'
+                f'<td class="mono">{escape(o["exit_date"] or "")}</td>'
+                f'<td>{o["entry_price"]:g} → {o["exit_price"]:g}</td></tr>'
+            )
+        else:
+            note = o["note"] or ("지평 미경과" if o["status"] == "pending" else "")
+            rows.append(
+                f"<tr{primary}><td>{escape(label)}</td>"
+                f'<td class="na" colspan="5">{escape(o["status"])}'
+                f'{" · " + escape(note) if note else ""}</td></tr>'
+            )
+
+    return (
+        '<div class="tw"><table><thead><tr>'
+        "<th>지평</th><th>판정</th><th>수익률</th><th>진입일</th><th>청산일</th><th>종가</th>"
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
+    )
+
+
+def judgement_page(payload: Dict[str, Any], server_build: BuildInfo,
+                   outcomes: Optional[List[Dict[str, Any]]] = None,
+                   default_horizon: int = 21) -> str:
     """판정 1건을 HTML로 렌더링한다.
 
     페이지에는 판정 당시 반환한 JSON 원문이 그대로 들어간다. 화면에 보이는
@@ -144,7 +192,7 @@ def judgement_page(payload: Dict[str, Any], server_build: BuildInfo) -> str:
     {_cell("시장", str(payload.get("market", "")))}
     {_cell("판정", verdict_txt)}
     {_cell("규칙 세트", str(payload.get("ruleset_version", "")), mono=True)}
-    {_cell("소요 시간", f'{payload.get("duration_ms", 0)} ms')}
+    {_cell("기준일", str(payload.get("as_of_date", "")), mono=True)}
   </div>
 
   <h2>빌드 정보 (판정 당시)</h2>
@@ -152,6 +200,9 @@ def judgement_page(payload: Dict[str, Any], server_build: BuildInfo) -> str:
     {_cell("branch", str(build.get("branch", "unknown")) + dirty_mark, mono=True)}
     {_cell("commit", str(build.get("commit", "unknown")), mono=True)}
   </div>
+
+  <h2>지평별 결과</h2>
+  {_outcomes_html(outcomes or [], default_horizon)}
 
   <h2>판정 프로세스</h2>
   {_steps_html(payload.get("process", []))}

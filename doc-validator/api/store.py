@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS judgements (
     result            INTEGER NOT NULL,
     ruleset_version   TEXT NOT NULL,
     created_at        TEXT NOT NULL,
+    as_of_date        TEXT NOT NULL,
     duration_ms       REAL NOT NULL,
     commit_hash       TEXT NOT NULL,
     commit_short      TEXT NOT NULL,
@@ -41,6 +42,26 @@ CREATE TABLE IF NOT EXISTS judgement_steps (
     PRIMARY KEY (judgement_id, seq),
     FOREIGN KEY (judgement_id) REFERENCES judgements(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS outcomes (
+    judgement_id TEXT NOT NULL,
+    horizon_days INTEGER NOT NULL,
+    status       TEXT NOT NULL,          -- pending | scored | unavailable
+    entry_date   TEXT,
+    entry_price  REAL,
+    exit_date    TEXT,
+    exit_price   REAL,
+    return_pct   REAL,
+    hit          INTEGER,                -- 판정 방향이 맞았는가
+    price_source TEXT,
+    note         TEXT,
+    evaluated_at TEXT,
+    PRIMARY KEY (judgement_id, horizon_days),
+    FOREIGN KEY (judgement_id) REFERENCES judgements(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_outcomes_pending
+    ON outcomes (status, horizon_days);
 
 CREATE INDEX IF NOT EXISTS idx_judgements_created_at
     ON judgements (created_at DESC);
@@ -81,9 +102,9 @@ class JudgementStore:
                 """
                 INSERT INTO judgements (
                     id, ticker, normalized_ticker, market, result, ruleset_version,
-                    created_at, duration_ms, commit_hash, commit_short, branch, dirty,
+                    created_at, as_of_date, duration_ms, commit_hash, commit_short, branch, dirty,
                     response_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     judgement.id,
@@ -93,6 +114,7 @@ class JudgementStore:
                     int(judgement.result),
                     judgement.ruleset_version,
                     judgement.created_at.isoformat(),
+                    judgement.as_of_date.isoformat(),
                     judgement.duration_ms,
                     build.commit,
                     build.commit_short,
@@ -117,6 +139,14 @@ class JudgementStore:
                     )
                     for s in judgement.steps
                 ],
+            )
+            # 지평별 채점 슬롯을 미리 만들어 둔다. 채점기는 이 pending 행만 훑으면 된다.
+            conn.executemany(
+                """
+                INSERT INTO outcomes (judgement_id, horizon_days, status)
+                VALUES (?, ?, 'pending')
+                """,
+                [(judgement.id, h) for h in judgement.horizons],
             )
         return payload
 
@@ -181,6 +211,106 @@ class JudgementStore:
         with self._connect() as conn:
             return conn.execute(sql, params).fetchone()["n"]
 
+    # ---- outcomes ----------------------------------------------------
+
+    def get_outcomes(self, judgement_id: str) -> List[Dict[str, Any]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM outcomes WHERE judgement_id = ? ORDER BY horizon_days",
+                (judgement_id,),
+            ).fetchall()
+        return [self._outcome_row(r) for r in rows]
+
+    def pending_outcomes(self, limit: int = 500,
+                         include_unavailable: bool = False) -> List[Dict[str, Any]]:
+        """채점 대기 중인 (판정, 지평) 쌍을 판정 정보와 함께 돌려준다.
+
+        시세를 일시적으로 못 받아 unavailable로 남은 건은 기본적으로 건너뛴다.
+        include_unavailable을 켜면 그 건들까지 다시 훑는다.
+        """
+        statuses = ("pending", "unavailable") if include_unavailable else ("pending",)
+        placeholders = ", ".join("?" for _ in statuses)
+        with self._connect() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT o.judgement_id, o.horizon_days,
+                       j.normalized_ticker, j.market, j.result, j.as_of_date
+                FROM outcomes o
+                JOIN judgements j ON j.id = o.judgement_id
+                WHERE o.status IN ({placeholders})
+                ORDER BY j.as_of_date, o.horizon_days
+                LIMIT ?
+                """,
+                (*statuses, limit),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def record_outcome(self, judgement_id: str, horizon_days: int, status: str,
+                       evaluated_at: str, entry_date: Optional[str] = None,
+                       entry_price: Optional[float] = None, exit_date: Optional[str] = None,
+                       exit_price: Optional[float] = None, return_pct: Optional[float] = None,
+                       hit: Optional[bool] = None, price_source: Optional[str] = None,
+                       note: Optional[str] = None) -> None:
+        with self._connect() as conn:
+            conn.execute(
+                """
+                UPDATE outcomes SET
+                    status = ?, entry_date = ?, entry_price = ?, exit_date = ?,
+                    exit_price = ?, return_pct = ?, hit = ?, price_source = ?,
+                    note = ?, evaluated_at = ?
+                WHERE judgement_id = ? AND horizon_days = ?
+                """,
+                (
+                    status, entry_date, entry_price, exit_date, exit_price,
+                    return_pct, None if hit is None else int(hit), price_source,
+                    note, evaluated_at, judgement_id, horizon_days,
+                ),
+            )
+
+    def hit_rate(self, horizon_days: int, ticker: Optional[str] = None) -> Dict[str, Any]:
+        """지평별 적중률. 룰이 실제로 되는지 보는 최소 지표."""
+        sql = """
+            SELECT COUNT(*) AS n,
+                   SUM(o.hit) AS hits,
+                   AVG(o.return_pct) AS avg_return
+            FROM outcomes o
+            JOIN judgements j ON j.id = o.judgement_id
+            WHERE o.status = 'scored' AND o.horizon_days = ?
+        """
+        params: List[Any] = [horizon_days]
+        if ticker:
+            sql += " AND j.normalized_ticker = ?"
+            params.append(ticker.strip().upper())
+
+        with self._connect() as conn:
+            row = conn.execute(sql, params).fetchone()
+
+        n = row["n"] or 0
+        hits = row["hits"] or 0
+        return {
+            "horizon_days": horizon_days,
+            "scored": n,
+            "hits": hits,
+            "hit_rate": round(hits / n, 4) if n else None,
+            "avg_return_pct": round(row["avg_return"], 4) if row["avg_return"] is not None else None,
+        }
+
+    @staticmethod
+    def _outcome_row(row: sqlite3.Row) -> Dict[str, Any]:
+        return {
+            "horizon_days": row["horizon_days"],
+            "status": row["status"],
+            "entry_date": row["entry_date"],
+            "entry_price": row["entry_price"],
+            "exit_date": row["exit_date"],
+            "exit_price": row["exit_price"],
+            "return_pct": row["return_pct"],
+            "hit": None if row["hit"] is None else bool(row["hit"]),
+            "price_source": row["price_source"],
+            "note": row["note"],
+            "evaluated_at": row["evaluated_at"],
+        }
+
     @staticmethod
     def _summary_row(row: sqlite3.Row) -> Dict[str, Any]:
         return {
@@ -191,6 +321,7 @@ class JudgementStore:
             "result": bool(row["result"]),
             "ruleset_version": row["ruleset_version"],
             "created_at": row["created_at"],
+            "as_of_date": row["as_of_date"],
             "duration_ms": row["duration_ms"],
             "build": {
                 "commit": row["commit_hash"],

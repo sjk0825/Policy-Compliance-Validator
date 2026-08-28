@@ -2,13 +2,20 @@ import re
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List
+from datetime import date, datetime
+from typing import Any, Dict, List, Optional
 
 from .buildinfo import current_build
 
 # 판정 규칙 세트 버전. 규칙이 바뀌면 올린다 (과거 판정이 어떤 규칙으로 났는지 추적용).
 RULESET_VERSION = "stub-always-true.v0"
+
+# 판정 1건을 채점할 지평(거래일 기준). 지금 하나로 못 박으면 나중에
+# "어느 주기에서 이 룰이 유효했나"를 사후에 물을 수 없다.
+HORIZONS = [3, 10, 21, 63]
+
+# 화면·요약에서 대표로 보여줄 지평.
+DEFAULT_HORIZON = 21
 
 _KRX_PATTERN = re.compile(r"^\d{6}$")
 
@@ -46,7 +53,9 @@ class Judgement:
     result: bool
     ruleset_version: str
     created_at: datetime
+    as_of_date: date
     duration_ms: float
+    horizons: List[int] = field(default_factory=lambda: list(HORIZONS))
     steps: List[ProcessStep] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -58,7 +67,9 @@ class Judgement:
             "result": self.result,
             "ruleset_version": self.ruleset_version,
             "created_at": self.created_at.isoformat(),
+            "as_of_date": self.as_of_date.isoformat(),
             "duration_ms": self.duration_ms,
+            "horizons": self.horizons,
             "build": current_build().to_dict(),
             "process": [s.to_dict() for s in self.steps],
         }
@@ -106,13 +117,14 @@ def _classify_market(symbol: str) -> str:
     return "UNKNOWN"
 
 
-def run(ticker: str) -> Judgement:
+def run(ticker: str, as_of: Optional[date] = None) -> Judgement:
     """종목 하나에 대한 판정 파이프라인.
 
     지금 evaluate 단계는 상수 True를 돌려주는 스텁이다. 실제 판정 로직이
     들어갈 자리는 여기 한 곳뿐이고, 나머지 단계와 기록 구조는 그대로 쓴다.
     """
     started = time.perf_counter()
+    as_of = as_of or date.today()
     rec = _Recorder()
 
     normalized = rec.record(
@@ -153,9 +165,12 @@ def run(ticker: str) -> Judgement:
     judgement_id = rec.record(
         name="finalize",
         title="판정 확정",
-        description="판정 id를 발급하고 결과와 실행 기록을 저장 대상으로 확정한다.",
-        step_input={"result": result},
-        fn=lambda: {"judgement_id": _new_id()},
+        description=(
+            "판정 id를 발급하고, 이 판정을 채점할 기준일과 지평을 고정한다. "
+            "실제 채점은 지평이 경과한 뒤 별도로 이뤄진다."
+        ),
+        step_input={"result": result, "as_of_date": as_of.isoformat()},
+        fn=lambda: {"judgement_id": _new_id(), "horizons": list(HORIZONS)},
     )["judgement_id"]
 
     return Judgement(
@@ -166,6 +181,7 @@ def run(ticker: str) -> Judgement:
         result=result,
         ruleset_version=ruleset,
         created_at=datetime.now(),
+        as_of_date=as_of,
         duration_ms=round((time.perf_counter() - started) * 1000, 3),
         steps=rec.steps,
     )

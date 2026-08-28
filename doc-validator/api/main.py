@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from . import pipeline, render, schemas
+from . import pipeline, render, schemas, scoring
 from .buildinfo import current_build
 from .store import JudgementStore
 
@@ -52,7 +52,7 @@ def create_judgement(req: schemas.JudgeRequest, store: JudgementStore = Depends(
     응답의 process에 이 값이 나온 실행 단계가 그대로 들어가고,
     같은 내용이 id로 다시 조회된다.
     """
-    judgement = pipeline.run(req.ticker)
+    judgement = pipeline.run(req.ticker, as_of=req.as_of)
     return store.save(judgement)
 
 
@@ -97,7 +97,12 @@ def get_judgement(
         raise HTTPException(status_code=404, detail=f"판정 '{judgement_id}'을(를) 찾을 수 없습니다.")
 
     if format == "html":
-        return HTMLResponse(render.judgement_page(payload, current_build()))
+        return HTMLResponse(render.judgement_page(
+            payload,
+            current_build(),
+            outcomes=store.get_outcomes(judgement_id),
+            default_horizon=pipeline.DEFAULT_HORIZON,
+        ))
     return JSONResponse(payload)
 
 
@@ -116,4 +121,46 @@ def get_judgement_process(judgement_id: str, store: JudgementStore = Depends(get
         created_at=summary["created_at"],
         build=summary["build"],
         process=store.get_steps(judgement_id),
+    )
+
+
+@app.get("/judgements/{judgement_id}/outcomes", response_model=schemas.OutcomesOut, tags=["outcome"])
+def get_judgement_outcomes(judgement_id: str, store: JudgementStore = Depends(get_store)):
+    """이 판정이 지평별로 어떻게 됐는지 돌려준다."""
+    summary = store.get_summary(judgement_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail=f"판정 '{judgement_id}'을(를) 찾을 수 없습니다.")
+
+    return schemas.OutcomesOut(
+        id=summary["id"],
+        ticker=summary["ticker"],
+        result=summary["result"],
+        as_of_date=summary["as_of_date"],
+        default_horizon=pipeline.DEFAULT_HORIZON,
+        outcomes=store.get_outcomes(judgement_id),
+    )
+
+
+@app.post("/outcomes/score", response_model=schemas.ScoreRunOut, tags=["outcome"])
+def run_scoring(
+    limit: int = Query(500, ge=1, le=5000),
+    retry_unavailable: bool = Query(
+        False, description="시세를 못 받아 unavailable로 남은 건까지 다시 시도한다."
+    ),
+    store: JudgementStore = Depends(get_store),
+):
+    """지평이 경과한 판정을 채점한다. 스케줄러가 주기적으로 때리는 진입점."""
+    return scoring.score_pending(store, limit=limit, retry_unavailable=retry_unavailable)
+
+
+@app.get("/stats", response_model=schemas.StatsOut, tags=["outcome"])
+def get_stats(
+    ticker: Optional[str] = Query(None),
+    store: JudgementStore = Depends(get_store),
+):
+    """지평별 적중률. 어느 주기에서 룰이 먹히는지 보는 지표."""
+    return schemas.StatsOut(
+        ticker=ticker,
+        default_horizon=pipeline.DEFAULT_HORIZON,
+        by_horizon=[store.hit_rate(h, ticker) for h in pipeline.HORIZONS],
     )
