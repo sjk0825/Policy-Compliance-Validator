@@ -127,6 +127,14 @@ class LLMRouter:
             raise RouterUnavailable(f"{type(e).__name__}: {e}") from e
 
     def route(self, ctx: Dict[str, Any]) -> RouteDecision:
+        return self.route_digest(digest(ctx))
+
+    def route_digest(self, ctx_digest: Dict[str, Any]) -> RouteDecision:
+        """축약 컨텍스트만으로 라우팅한다.
+
+        저장해 둔 입력 fixture를 그대로 태울 수 있어야 프롬프트나 모델을
+        바꿨을 때 같은 입력으로 비교가 된다.
+        """
         if not self.configured:
             raise RouterUnavailable("OPENROUTER_API_KEY가 설정되지 않았습니다.")
 
@@ -135,7 +143,7 @@ class LLMRouter:
             "model": self.model,
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": build_prompt(digest(ctx))},
+                {"role": "user", "content": build_prompt(ctx_digest)},
             ],
             "max_tokens": 200,
             "temperature": 0,

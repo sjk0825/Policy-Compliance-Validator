@@ -1,0 +1,19 @@
+{
+  "note": "라우터 입력을 굳혀두는 회귀 테스트 케이스. 국면이 서로 다른 시점으로 고른다. 실제 입력 데이터(content)는 scripts/make_router_cases.py로 생성하며 커밋하지 않는다.",
+  "cases": [
+    {"id": "qqq_covid_crash",   "symbol": "QQQ",     "as_of": "2020-03-16", "regime": "코로나 폭락"},
+    {"id": "qqq_bear_2022",     "symbol": "QQQ",     "as_of": "2022-06-16", "regime": "2022 베어마켓 저점권"},
+    {"id": "qqq_rally_start",   "symbol": "QQQ",     "as_of": "2023-11-03", "regime": "2023 랠리 초입"},
+    {"id": "qqq_ath",           "symbol": "QQQ",     "as_of": "2024-06-14", "regime": "신고가, 저변동성"},
+    {"id": "dbmf_strong_2022",  "symbol": "DBMF",    "as_of": "2022-06-16", "regime": "역추세 자산 강세"},
+    {"id": "dbmf_weak_2023",    "symbol": "DBMF",    "as_of": "2023-07-14", "regime": "역추세 자산 약세"},
+    {"id": "krx_black_monday",  "symbol": "005930",  "as_of": "2024-08-05", "regime": "한국 블랙먼데이"},
+    {"id": "krx_recovery",      "symbol": "005930",  "as_of": "2023-05-31", "regime": "반도체 회복"},
+    {"id": "kodex_bottom_2022", "symbol": "069500",  "as_of": "2022-09-30", "regime": "한국 저점권"},
+    {"id": "btc_ftx",           "symbol": "BTC/USD", "as_of": "2022-11-10", "regime": "FTX 붕괴"},
+    {"id": "btc_etf_rally",     "symbol": "BTC/USD", "as_of": "2024-03-08", "regime": "현물 ETF 랠리"},
+    {"id": "gld_breakout",      "symbol": "GLD",     "as_of": "2024-03-01", "regime": "금 돌파"},
+    {"id": "tlt_rate_shock",    "symbol": "TLT",     "as_of": "2022-10-21", "regime": "금리 급등"},
+    {"id": "iwm_top_2021",      "symbol": "IWM",     "as_of": "2021-11-19", "regime": "소형주 고점"}
+  ]
+}

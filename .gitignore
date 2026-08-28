@@ -11,6 +11,11 @@ doc-validator/data/*.db
 doc-validator/fixtures/data/
 # 슬라이스 CSV도 seed로 복원 가능하다. slice.json만 커밋한다.
 doc-validator/fixtures/slices/**/*.csv
+
+# 라우터 입력 fixture. 케이스 정의(router_cases.json)로 재생성되므로
+# 내용은 커밋하지 않고 해시가 담긴 manifest만 남긴다.
+doc-validator/fixtures/router_inputs/*.json
+!doc-validator/fixtures/router_inputs/manifest.json
 doc-validator/logs/*.log
 
 .env

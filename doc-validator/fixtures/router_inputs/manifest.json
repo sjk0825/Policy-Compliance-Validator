@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-08-28T17:29:15",
+  "case_count": 14,
+  "failures": [],
+  "cases": [
+    {
+      "id": "qqq_covid_crash",
+      "symbol": "QQQ",
+      "as_of": "2020-03-16",
+      "regime": "코로나 폭락",
+      "file": "fixtures/router_inputs/qqq_covid_crash.json",
+      "digest_sha256": "355d1a6ed434fd6173b89c28a2c39cd1df1f6e20ea68487d72db7ede2c29b1b7",
+      "prompt_chars": 1259
+    },
+    {
+      "id": "qqq_bear_2022",
+      "symbol": "QQQ",
+      "as_of": "2022-06-16",
+      "regime": "2022 베어마켓 저점권",
+      "file": "fixtures/router_inputs/qqq_bear_2022.json",
+      "digest_sha256": "22a0ad8c5e9500e8bef40ab259070db74e97bdc284d629f874e3b0f2f28f6ed5",
+      "prompt_chars": 1247
+    },
+    {
+      "id": "qqq_rally_start",
+      "symbol": "QQQ",
+      "as_of": "2023-11-03",
+      "regime": "2023 랠리 초입",
+      "file": "fixtures/router_inputs/qqq_rally_start.json",
+      "digest_sha256": "8cab09667fb0bd7e16f25a707b49d7107811789b2f44edb6018edf7755655884",
+      "prompt_chars": 1227
+    },
+    {
+      "id": "qqq_ath",
+      "symbol": "QQQ",
+      "as_of": "2024-06-14",
+      "regime": "신고가, 저변동성",
+      "file": "fixtures/router_inputs/qqq_ath.json",
+      "digest_sha256": "b026a27dd8c646c137d6695b2b044d3c0fa9f608e85b67cd76c29a267a1e6a89",
+      "prompt_chars": 1218
+    },
+    {
+      "id": "dbmf_strong_2022",
+      "symbol": "DBMF",
+      "as_of": "2022-06-16",
+      "regime": "역추세 자산 강세",
+      "file": "fixtures/router_inputs/dbmf_strong_2022.json",
+      "digest_sha256": "cb7905120734980b68fbafcb7df73821f22ae4b2da5cd8455bd538392bda09d9",
+      "prompt_chars": 1247
+    },
+    {
+      "id": "dbmf_weak_2023",
+      "symbol": "DBMF",
+      "as_of": "2023-07-14",
+      "regime": "역추세 자산 약세",
+      "file": "fixtures/router_inputs/dbmf_weak_2023.json",
+      "digest_sha256": "838930a10de3e88588a240185a0221cd6d1f94632f4e9d6e31c4e6f4371b2865",
+      "prompt_chars": 1234
+    },
+    {
+      "id": "krx_black_monday",
+      "symbol": "005930",
+      "as_of": "2024-08-05",
+      "regime": "한국 블랙먼데이",
+      "file": "fixtures/router_inputs/krx_black_monday.json",
+      "digest_sha256": "142cdd8a1c6907d510802a1a74f16483f6cc3a09a2ff6ef462bcc378771be292",
+      "prompt_chars": 1242
+    },
+    {
+      "id": "krx_recovery",
+      "symbol": "005930",
+      "as_of": "2023-05-31",
+      "regime": "반도체 회복",
+      "file": "fixtures/router_inputs/krx_recovery.json",
+      "digest_sha256": "1591a5b703b7b43b244dd30dd3d30d0086c70f5ea542325a9fa15aa6c36d86fb",
+      "prompt_chars": 1219
+    },
+    {
+      "id": "kodex_bottom_2022",
+      "symbol": "069500",
+      "as_of": "2022-09-30",
+      "regime": "한국 저점권",
+      "file": "fixtures/router_inputs/kodex_bottom_2022.json",
+      "digest_sha256": "e5d935cb09aebba72b3c58c54c36d41123070c0ee4b9132d215b08b58a459971",
+      "prompt_chars": 1246
+    },
+    {
+      "id": "btc_ftx",
+      "symbol": "BTC/USD",
+      "as_of": "2022-11-10",
+      "regime": "FTX 붕괴",
+      "file": "fixtures/router_inputs/btc_ftx.json",
+      "digest_sha256": "ac2cddc37266ab589ccf4278067a705a8ce3dd75e1b7efbed86316d6cbd6c617",
+      "prompt_chars": 1243
+    },
+    {
+      "id": "btc_etf_rally",
+      "symbol": "BTC/USD",
+      "as_of": "2024-03-08",
+      "regime": "현물 ETF 랠리",
+      "file": "fixtures/router_inputs/btc_etf_rally.json",
+      "digest_sha256": "9faba52ffb92a4dee6248eb156c7ac76640a4c08553920be1f71e893771ad702",
+      "prompt_chars": 1230
+    },
+    {
+      "id": "gld_breakout",
+      "symbol": "GLD",
+      "as_of": "2024-03-01",
+      "regime": "금 돌파",
+      "file": "fixtures/router_inputs/gld_breakout.json",
+      "digest_sha256": "ff426226bbbe3a50d1611a205f9704d7c1d5f03a36a5df2f98d828e722643e2b",
+      "prompt_chars": 1208
+    },
+    {
+      "id": "tlt_rate_shock",
+      "symbol": "TLT",
+      "as_of": "2022-10-21",
+      "regime": "금리 급등",
+      "file": "fixtures/router_inputs/tlt_rate_shock.json",
+      "digest_sha256": "e5a757ff3603b471c8f22a99cf309f59b9357b34e6ecaa9acaa9330963534d04",
+      "prompt_chars": 1249
+    },
+    {
+      "id": "iwm_top_2021",
+      "symbol": "IWM",
+      "as_of": "2021-11-19",
+      "regime": "소형주 고점",
+      "file": "fixtures/router_inputs/iwm_top_2021.json",
+      "digest_sha256": "1b2afdf77a8102904cd042e576d668146ff5c7863e6bb3084edeec63cc643296",
+      "prompt_chars": 1222
+    }
+  ]
+}
