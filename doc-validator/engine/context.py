@@ -32,9 +32,19 @@ REGIME_ASSETS = [
 RETURN_WINDOWS = [1, 5, 20, 60, 120, 252]
 MAX_LOOKBACK = 400
 
-# 횡단면 비교에 쓰는 모멘텀 축. IC 측정에서 미국·한국 양쪽 모두
-# t 2~7로 일관되게 유의했던 것들만 남겼다. vol_ratio는 뺐다.
-MOMENTUM_AXES = ["ret_60d", "ret_120d", "px_vs_sma60", "slope60"]
+# 횡단면 비교 축. 스타일별로 묶는다.
+# 백분위는 원래 방향 그대로 매기고(값이 클수록 1에 가깝다), 방향 해석은
+# 프로그램이 한다. 여기서 뒤집어두면 나중에 축을 다른 용도로 못 쓴다.
+CROSS_AXES = {
+    # 모멘텀. IC 측정에서 미국·한국 양쪽 t 2~7로 유의했던 것들.
+    "momentum": ["ret_60d", "ret_120d", "px_vs_sma60", "slope60"],
+    # 단기 반전. 값이 낮을수록 과매도다.
+    "reversal": ["ret_5d", "ret_20d", "px_vs_sma20"],
+    # 안정성. 변동성과 낙폭.
+    "stability": ["vol_20d", "vol_ratio", "drawdown"],
+}
+MOMENTUM_AXES = CROSS_AXES["momentum"]
+ALL_AXES = [a for axes in CROSS_AXES.values() for a in axes]
 
 # (market, as_of) 단위로 동료 종목 지표를 재사용한다. 백테스트는 같은
 # 날짜에 모든 종목을 훑으므로 이게 없으면 같은 계산을 수십 번 반복한다.
@@ -122,16 +132,24 @@ def _regime_entry(store: PriceStore, symbol: str, as_of: str) -> Optional[Dict[s
     }
 
 
-def _momentum_axes(store: PriceStore, symbol: str, as_of: str) -> Dict[str, Optional[float]]:
+def _axis_values(store: PriceStore, symbol: str, as_of: str) -> Dict[str, Optional[float]]:
     closes = store.closes(symbol, as_of, MAX_LOOKBACK)
     if len(closes) < 2:
-        return {k: None for k in MOMENTUM_AXES}
-    s60 = F.sma(closes, 60)
+        return {k: None for k in ALL_AXES}
+    s20, s60 = F.sma(closes, 20), F.sma(closes, 60)
+    v20, v60 = F.ann_volatility(closes, 20), F.ann_volatility(closes, 60)
+    dd = F.drawdown_from_high(closes, 252) or {}
     return {
+        "ret_5d": F.ret(closes, 5),
+        "ret_20d": F.ret(closes, 20),
         "ret_60d": F.ret(closes, 60),
         "ret_120d": F.ret(closes, 120),
+        "px_vs_sma20": round((closes[-1] / s20 - 1) * 100, 4) if s20 else None,
         "px_vs_sma60": round((closes[-1] / s60 - 1) * 100, 4) if s60 else None,
         "slope60": F.slope_pct(closes, 60),
+        "vol_20d": v20,
+        "vol_ratio": round(v20 / v60, 4) if v20 and v60 else None,
+        "drawdown": dd.get("pct"),
     }
 
 
@@ -141,7 +159,7 @@ def _peer_axes(store: PriceStore, market: str, as_of: str) -> Dict[str, Dict]:
         return _PEER_CACHE[key]
 
     peers = [s for s in store.symbols if store.meta(s).market == market]
-    out = {s: _momentum_axes(store, s, as_of) for s in peers}
+    out = {s: _axis_values(store, s, as_of) for s in peers}
 
     if len(_PEER_CACHE) >= _PEER_CACHE_MAX:
         _PEER_CACHE.clear()
@@ -160,7 +178,7 @@ def _cross_section(store: PriceStore, symbol: str, as_of: str,
     me = axes.get(symbol) or {}
 
     pct: Dict[str, Optional[float]] = {}
-    for axis in MOMENTUM_AXES:
+    for axis in ALL_AXES:
         mine = me.get(axis)
         vals = [v[axis] for v in axes.values() if v.get(axis) is not None]
         if mine is None or len(vals) < 5:
@@ -170,14 +188,21 @@ def _cross_section(store: PriceStore, symbol: str, as_of: str,
         ties = sum(1 for v in vals if v == mine)
         pct[axis] = round((below + 0.5 * ties) / len(vals), 4)
 
+    def composite(names: List[str]) -> Optional[float]:
+        vals = [pct[a] for a in names if pct.get(a) is not None]
+        return round(sum(vals) / len(vals), 4) if vals else None
+
+    styles = {k: composite(v) for k, v in CROSS_AXES.items()}
     scored = [v for v in pct.values() if v is not None]
     return {
         "market": market,
         "peer_count": len(axes),
         "ranked_axes": len(scored),
         "percentile": pct,
-        # 축들의 평균 백분위. 1에 가까울수록 동료 대비 강하다.
-        "composite": round(sum(scored) / len(scored), 4) if scored else None,
+        # 스타일별 종합 백분위. 방향 해석은 프로그램이 한다.
+        "styles": styles,
+        # 모멘텀 종합. 하위 호환을 위해 남긴다.
+        "composite": styles.get("momentum"),
     }
 
 

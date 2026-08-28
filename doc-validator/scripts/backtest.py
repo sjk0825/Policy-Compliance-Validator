@@ -15,6 +15,7 @@
 import argparse
 import json
 import random
+import statistics as st
 import sys
 import time
 from collections import defaultdict
@@ -204,8 +205,31 @@ def summarize(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             "rel_hit_rate": round(rel_hit * 100, 2) if rel_hit is not None else None,
             "rel_edge_pp": round((rel_hit - 0.5) * 100, 2) if rel_hit is not None else None,
             "rel_avg_when_true": round(sum(rel_taken) / len(rel_taken), 3) if rel_taken else None,
+            **_profile(rel_taken),
         }
     return out
+
+
+def _profile(vals: List[float]) -> Dict[str, Any]:
+    """수익 분포의 모양. 승률만 보면 프로파일을 놓친다.
+
+    평균이 같아도 "자주 조금 이기고 가끔 크게 잃는" 것과 그 반대는 전혀
+    다른 전략이다. 중앙값·왜도·이익손실비로 구분한다.
+    """
+    if len(vals) < 30:
+        return {"win_rate": None, "median": None, "skew": None, "win_loss_ratio": None}
+    wins = [v for v in vals if v > 0]
+    losses = [-v for v in vals if v < 0]
+    m, sd = st.mean(vals), st.pstdev(vals)
+    skew = (sum((v - m) ** 3 for v in vals) / len(vals) / sd ** 3) if sd else None
+    return {
+        "win_rate": round(len(wins) / len(vals) * 100, 2),
+        "median": round(st.median(vals), 3),
+        "skew": round(skew, 3) if skew is not None else None,
+        # 평균 이익 / 평균 손실. 1보다 크면 이길 때 더 크게 이긴다.
+        "win_loss_ratio": (round(st.mean(wins) / st.mean(losses), 3)
+                           if wins and losses else None),
+    }
 
 
 def print_summary(title: str, s: Dict[str, Any]) -> None:
@@ -223,6 +247,16 @@ def print_summary(title: str, s: Dict[str, Any]) -> None:
                if v["rel_hit_rate"] is not None else f"{'-':>32}")
         print(f"  {h:>3}일  {v['hit_rate']:>8.2f}%{v['expected']:>8.2f}%"
               f"{v['edge_pp']:>+8.2f}p{st1}{rel}")
+
+    print(f"\n  true 판정의 초과수익 분포")
+    print(f"  {'지평':<7}{'승률':>9}{'중앙값':>10}{'평균':>10}{'왜도':>9}{'이익/손실':>11}")
+    print("  " + "-" * 56)
+    for h, v in s["horizons"].items():
+        if v.get("win_rate") is None:
+            continue
+        print(f"  {h:>3}일  {v['win_rate']:>8.2f}%{v['median']:>+9.2f}%"
+              f"{(v['rel_avg_when_true'] or 0):>+9.2f}%{v['skew']:>+9.2f}"
+              f"{(v['win_loss_ratio'] or 0):>11.2f}")
 
 
 def main() -> int:
