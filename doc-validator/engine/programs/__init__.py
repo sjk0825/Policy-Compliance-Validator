@@ -6,12 +6,13 @@
 from typing import Dict, List
 
 from .base import Program, ProgramResult, Signal
+from .cross_momentum import CrossMomentum
 from .defensive import Defensive
 from .mean_reversion import MeanReversion
 from .trend_following import TrendFollowing
 
 REGISTRY: Dict[str, Program] = {
-    p.name: p for p in (TrendFollowing(), MeanReversion(), Defensive())
+    p.name: p for p in (TrendFollowing(), MeanReversion(), CrossMomentum(), Defensive())
 }
 
 # 라우터가 못 고르거나 LLM을 못 쓸 때의 최종 안전판.

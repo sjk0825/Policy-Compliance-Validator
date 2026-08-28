@@ -32,6 +32,15 @@ REGIME_ASSETS = [
 RETURN_WINDOWS = [1, 5, 20, 60, 120, 252]
 MAX_LOOKBACK = 400
 
+# 횡단면 비교에 쓰는 모멘텀 축. IC 측정에서 미국·한국 양쪽 모두
+# t 2~7로 일관되게 유의했던 것들만 남겼다. vol_ratio는 뺐다.
+MOMENTUM_AXES = ["ret_60d", "ret_120d", "px_vs_sma60", "slope60"]
+
+# (market, as_of) 단위로 동료 종목 지표를 재사용한다. 백테스트는 같은
+# 날짜에 모든 종목을 훑으므로 이게 없으면 같은 계산을 수십 번 반복한다.
+_PEER_CACHE: Dict[tuple, Dict[str, Dict[str, Optional[float]]]] = {}
+_PEER_CACHE_MAX = 512
+
 
 @dataclass
 class MarketContext:
@@ -44,6 +53,7 @@ class MarketContext:
     volatility: Dict[str, Optional[float]]
     drawdown: Optional[Dict[str, Any]]
     volume: Dict[str, Optional[float]]
+    cross_section: Dict[str, Any]
     regime: Dict[str, Any]
     coverage: Dict[str, Any]
     warnings: List[str] = field(default_factory=list)
@@ -60,6 +70,7 @@ class MarketContext:
             "volatility": self.volatility,
             "drawdown": self.drawdown,
             "volume": self.volume,
+            "cross_section": self.cross_section,
             "regime": self.regime,
             "warnings": self.warnings,
         }
@@ -108,6 +119,65 @@ def _regime_entry(store: PriceStore, symbol: str, as_of: str) -> Optional[Dict[s
         "px_vs_sma60_pct": round((closes[-1] / s60 - 1) * 100, 4) if s60 else None,
         "sma20_above_sma60": (s20 > s60) if (s20 and s60) else None,
         "ann_vol_20d_pct": F.ann_volatility(closes, 20),
+    }
+
+
+def _momentum_axes(store: PriceStore, symbol: str, as_of: str) -> Dict[str, Optional[float]]:
+    closes = store.closes(symbol, as_of, MAX_LOOKBACK)
+    if len(closes) < 2:
+        return {k: None for k in MOMENTUM_AXES}
+    s60 = F.sma(closes, 60)
+    return {
+        "ret_60d": F.ret(closes, 60),
+        "ret_120d": F.ret(closes, 120),
+        "px_vs_sma60": round((closes[-1] / s60 - 1) * 100, 4) if s60 else None,
+        "slope60": F.slope_pct(closes, 60),
+    }
+
+
+def _peer_axes(store: PriceStore, market: str, as_of: str) -> Dict[str, Dict]:
+    key = (market, as_of, id(store))
+    if key in _PEER_CACHE:
+        return _PEER_CACHE[key]
+
+    peers = [s for s in store.symbols if store.meta(s).market == market]
+    out = {s: _momentum_axes(store, s, as_of) for s in peers}
+
+    if len(_PEER_CACHE) >= _PEER_CACHE_MAX:
+        _PEER_CACHE.clear()
+    _PEER_CACHE[key] = out
+    return out
+
+
+def _cross_section(store: PriceStore, symbol: str, as_of: str,
+                   market: str) -> Dict[str, Any]:
+    """같은 시장 종목들 사이에서 이 종목이 몇 등인가.
+
+    모멘텀은 횡단면 순위로 작동한다(IC 측정 결과). "60일 수익률이 0보다
+    크다"는 절대 조건과 "동료 20종목 중 상위권"은 다른 이야기다.
+    """
+    axes = _peer_axes(store, market, as_of)
+    me = axes.get(symbol) or {}
+
+    pct: Dict[str, Optional[float]] = {}
+    for axis in MOMENTUM_AXES:
+        mine = me.get(axis)
+        vals = [v[axis] for v in axes.values() if v.get(axis) is not None]
+        if mine is None or len(vals) < 5:
+            pct[axis] = None
+            continue
+        below = sum(1 for v in vals if v < mine)
+        ties = sum(1 for v in vals if v == mine)
+        pct[axis] = round((below + 0.5 * ties) / len(vals), 4)
+
+    scored = [v for v in pct.values() if v is not None]
+    return {
+        "market": market,
+        "peer_count": len(axes),
+        "ranked_axes": len(scored),
+        "percentile": pct,
+        # 축들의 평균 백분위. 1에 가까울수록 동료 대비 강하다.
+        "composite": round(sum(scored) / len(scored), 4) if scored else None,
     }
 
 
@@ -164,6 +234,7 @@ def build(store: PriceStore, symbol: str, as_of: str) -> MarketContext:
             "avg20": round(sum(volumes[-20:]) / 20, 2) if len(volumes) >= 20 else None,
             "rel_vol_20_over_60_pct": F.relative_volume(volumes, 20, 60),
         },
+        cross_section=_cross_section(store, symbol, as_of, meta.market),
         regime=regime,
         warnings=warnings,
     )

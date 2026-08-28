@@ -134,6 +134,28 @@ def run(store: PriceStore, slice_meta: Dict[str, Any], router_kind: str,
             row[f"base_up_{h}"] = fwd.base_up_rate(sym, h)
         rows.append(row)
 
+    # 상대 성과 채점. 같은 시장·같은 날짜 동료들의 중앙값을 뺀다.
+    # 횡단면 순위는 절대 방향이 아니라 상대 순위를 예측하므로, 그 축으로도
+    # 재봐야 프로그램이 실제로 무엇을 맞히는지 보인다. 중앙값 기준이라
+    # 기대 적중률은 구조적으로 50%다.
+    by_key = defaultdict(list)
+    for r in rows:
+        by_key[(r["market"], r["date"])].append(r)
+    for group in by_key.values():
+        for h in HORIZONS:
+            vals = sorted(x[f"ret_{h}"] for x in group if x[f"ret_{h}"] is not None)
+            if len(vals) < 5:
+                for x in group:
+                    x[f"rel_{h}"] = None
+                    x[f"relhit_{h}"] = None
+                continue
+            mid = vals[len(vals) // 2] if len(vals) % 2 else (
+                vals[len(vals) // 2 - 1] + vals[len(vals) // 2]) / 2
+            for x in group:
+                v = x[f"ret_{h}"]
+                x[f"rel_{h}"] = None if v is None else round(v - mid, 4)
+                x[f"relhit_{h}"] = None if v is None else ((v - mid > 0) == x["decision"])
+
         if router_kind != "llm" and n % 500 == 0 and n:
             print(f"    … {n}/{len(pairs)}", flush=True)
 
@@ -166,6 +188,11 @@ def summarize(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         actual = hits / len(scored)
         rets = [r[f"ret_{h}"] for r in scored]
         taken = [r[f"ret_{h}"] for r in scored if r["decision"]]
+
+        rel = [r for r in scored if r.get(f"relhit_{h}") is not None]
+        rel_hit = (sum(1 for r in rel if r[f"relhit_{h}"]) / len(rel)) if rel else None
+        rel_taken = [r[f"rel_{h}"] for r in rel if r["decision"]]
+
         out["horizons"][h] = {
             "scored": len(scored),
             "hit_rate": round(actual * 100, 2),
@@ -173,6 +200,10 @@ def summarize(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             "edge_pp": round((actual - expected) * 100, 2),
             "avg_ret_all": round(sum(rets) / len(rets), 3),
             "avg_ret_when_true": round(sum(taken) / len(taken), 3) if taken else None,
+            # 상대 성과. 기대치가 50%로 고정이므로 edge = 적중률 - 50.
+            "rel_hit_rate": round(rel_hit * 100, 2) if rel_hit is not None else None,
+            "rel_edge_pp": round((rel_hit - 0.5) * 100, 2) if rel_hit is not None else None,
+            "rel_avg_when_true": round(sum(rel_taken) / len(rel_taken), 3) if rel_taken else None,
         }
     return out
 
@@ -180,13 +211,18 @@ def summarize(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
 def print_summary(title: str, s: Dict[str, Any]) -> None:
     print(f"\n{title}  (판정 {s['n']:,}건, true 비율 {s.get('decision_true_pct')}%)")
     print(f"  프로그램 분포: " + "  ".join(f"{k} {v}%" for k, v in s["program_mix"].items()))
-    print(f"\n  {'지평':<7}{'적중률':>9}{'기대치':>9}{'edge':>9}{'평균수익':>10}{'true일때':>10}")
-    print("  " + "-" * 54)
+    print(f"\n  {'':7}{'--- 절대 방향 ---':>28}{'--- 동료 대비 상대 ---':>30}")
+    print(f"  {'지평':<7}{'적중률':>9}{'기대치':>9}{'edge':>9}"
+          f"{'적중률':>12}{'edge':>9}{'초과수익':>10}")
+    print("  " + "-" * 66)
     for h, v in s["horizons"].items():
-        star = " *" if abs(v["edge_pp"]) >= 2 else ""
+        st1 = "*" if abs(v["edge_pp"]) >= 2 else " "
+        st2 = "*" if v["rel_edge_pp"] is not None and abs(v["rel_edge_pp"]) >= 2 else " "
+        rel = (f"{v['rel_hit_rate']:>11.2f}%{v['rel_edge_pp']:>+8.2f}p{st2}"
+               f"{(v['rel_avg_when_true'] or 0):>+9.2f}%"
+               if v["rel_hit_rate"] is not None else f"{'-':>32}")
         print(f"  {h:>3}일  {v['hit_rate']:>8.2f}%{v['expected']:>8.2f}%"
-              f"{v['edge_pp']:>+8.2f}p{v['avg_ret_all']:>+9.2f}%"
-              f"{(v['avg_ret_when_true'] if v['avg_ret_when_true'] is not None else 0):>+9.2f}%{star}")
+              f"{v['edge_pp']:>+8.2f}p{st1}{rel}")
 
 
 def main() -> int:
