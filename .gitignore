@@ -5,6 +5,10 @@ venv/
 
 # 판정 이력 DB (런타임 데이터)
 doc-validator/data/*.db
+
+# 시세 fixture. 재생성 가능하므로 커밋하지 않는다.
+# 무엇을 언제 어디까지 받았는지는 fixtures/manifest.json이 기록한다.
+doc-validator/fixtures/data/
 doc-validator/logs/*.log
 
 .env
