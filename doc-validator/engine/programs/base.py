@@ -45,6 +45,21 @@ class ProgramResult:
         }
 
 
+def ramp(value: Optional[float], zero_at: float, one_at: float) -> Optional[float]:
+    """zero_at에서 0, one_at에서 1이 되는 선형 램프. 구간 밖은 잘라낸다.
+
+    임계값 하나로 참·거짓을 가르면 경계에서 답이 튄다. 낙폭 -7.9%와
+    -8.1%가 다른 프로그램으로 가는 것은 데이터가 아니라 임계값이 만든
+    차이다. 램프를 쓰면 경계 부근이 완만해진다.
+    """
+    if value is None:
+        return None
+    span = one_at - zero_at
+    if span == 0:
+        return 1.0 if value >= one_at else 0.0
+    return max(0.0, min(1.0, (value - zero_at) / span))
+
+
 class Program(ABC):
     name: str = ""
     title: str = ""
@@ -55,6 +70,20 @@ class Program(ABC):
     @abstractmethod
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:
         ...
+
+    def fitness(self, ctx: Dict[str, Any]) -> float:
+        """이 국면이 이 프로그램의 영역에 얼마나 맞는가. 0~1.
+
+        판정이 아니라 적합도다. 라우터는 이 점수가 가장 높은 프로그램을
+        고른다. 우선순위 체인과 달리 순서가 결과를 바꾸지 않는다.
+        """
+        return 0.0
+
+    @staticmethod
+    def mean_fit(parts: List[Optional[float]]) -> float:
+        """데이터가 없어 None인 항목은 평균에서 뺀다."""
+        vals = [p for p in parts if p is not None]
+        return round(sum(vals) / len(vals), 4) if vals else 0.0
 
     # ---- 하위 클래스가 쓰는 도구 --------------------------------------
 

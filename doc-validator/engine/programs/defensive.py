@@ -13,6 +13,18 @@ class Defensive(Program):
         "추세 붕괴 중 하나라도 걸리면 잡지 않는다. 확신이 없을 때의 기본값."
     )
 
+    # 전문 프로그램이 이 값을 넘지 못하면 방어가 이긴다.
+    # 라우터에서 조정 가능한 유일한 손잡이다.
+    FLOOR = 0.45
+
+    def fitness(self, ctx: Dict[str, Any]) -> float:
+        """국면과 무관한 고정값.
+
+        방어는 특정 국면의 전문가가 아니라 "아무것도 확신하지 못할 때"의
+        기본값이다. 그래서 점수를 계산하지 않고 바닥을 깔아둔다.
+        """
+        return self.FLOOR
+
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:
         t, v = ctx["trend"], ctx["volatility"]
         dd = (ctx.get("drawdown") or {}).get("pct")

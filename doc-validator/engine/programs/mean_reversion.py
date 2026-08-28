@@ -1,7 +1,7 @@
 """역추세. 과하게 밀린 것이 되돌아온다는 쪽에 선다."""
 from typing import Any, Dict
 
-from .base import Program, ProgramResult, Signal
+from .base import Program, ProgramResult, Signal, ramp
 
 
 class MeanReversion(Program):
@@ -12,6 +12,16 @@ class MeanReversion(Program):
         "고점 대비 낙폭이 크고 단기적으로 더 밀렸으며 변동성이 확대되는 중일 때. "
         "패닉 구간에서 되돌림에 건다. 추세가 멀쩡히 살아 있을 때는 쓰지 않는다."
     )
+
+    def fitness(self, ctx: Dict[str, Any]) -> float:
+        t, v, r = ctx["trend"], ctx["volatility"], ctx["returns"]
+        dd = (ctx.get("drawdown") or {}).get("pct")
+        return self.mean_fit([
+            ramp(dd, -5.0, -20.0),                       # 깊게 밀릴수록
+            ramp(t["px_vs_sma20_pct"], 0.0, -6.0),       # 단기선 아래로 벌어질수록
+            ramp(v["vol_ratio_20_60"], 1.00, 1.40),      # 변동성이 확대될수록
+            ramp(r.get("5d"), 0.0, -6.0),                # 최근이 약할수록
+        ])
 
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:
         t, v, r = ctx["trend"], ctx["volatility"], ctx["returns"]

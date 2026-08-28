@@ -26,7 +26,8 @@ sys.path.insert(0, str(ROOT))
 
 from engine import PriceStore, build_context                    # noqa: E402
 from engine import programs                                     # noqa: E402
-from engine.router import LLMRouter, RouterUnavailable, heuristic_route  # noqa: E402
+from engine.router import (LLMRouter, RouterUnavailable,  # noqa: E402
+                           chain_route, heuristic_route)
 
 HORIZONS = [1, 3, 10, 21, 63]
 OUT_DIR = ROOT / "fixtures" / "backtests"
@@ -40,10 +41,16 @@ def latest_slice() -> Path:
 
 
 class Forward:
-    """기준일 이후 N거래일 수익률과, 같은 종목의 무조건부 기저율."""
+    """기준일 이후 N거래일 수익률과, 같은 종목의 무조건부 기저율.
 
-    def __init__(self, store: PriceStore) -> None:
+    기저율은 반드시 테스트와 같은 창에서 구한다. 전체 기간으로 구하면
+    상승장 구간을 테스트할 때 "참을 자주 뱉는다"는 것만으로 edge가
+    생겨버린다. 비교 대상은 "그 구간에 아무 날이나 골랐을 때"여야 한다.
+    """
+
+    def __init__(self, store: PriceStore, window: Optional[tuple] = None) -> None:
         self.store = store
+        self.window = window          # (start, end) 문자열
         self._idx: Dict[str, Dict[str, int]] = {}
         self._base: Dict[tuple, float] = {}
 
@@ -61,20 +68,25 @@ class Forward:
         return (bars[i + h].close / bars[i].close - 1) * 100
 
     def base_up_rate(self, symbol: str, h: int) -> float:
-        """이 종목이 h거래일 뒤 오를 무조건부 확률."""
+        """이 종목이 h거래일 뒤 오를 무조건부 확률(테스트 창 기준)."""
         key = (symbol, h)
         if key not in self._base:
             bars = self.store._all_bars(symbol)
-            ups = sum(1 for i in range(len(bars) - h)
-                      if bars[i + h].close > bars[i].close)
-            self._base[key] = ups / max(1, len(bars) - h)
+            lo, hi = (self.window or (None, None))
+            idxs = [i for i in range(len(bars) - h)
+                    if (lo is None or bars[i].date >= lo)
+                    and (hi is None or bars[i].date <= hi)]
+            if not idxs:
+                idxs = list(range(len(bars) - h))
+            ups = sum(1 for i in idxs if bars[i + h].close > bars[i].close)
+            self._base[key] = ups / max(1, len(idxs))
         return self._base[key]
 
 
 def run(store: PriceStore, slice_meta: Dict[str, Any], router_kind: str,
         llm: Optional[LLMRouter] = None, pairs: Optional[List] = None,
         sleep: float = 0.0) -> List[Dict[str, Any]]:
-    fwd = Forward(store)
+    fwd = Forward(store, window=(slice_meta["start"], slice_meta["end"]))
     rows: List[Dict[str, Any]] = []
 
     if pairs is None:
@@ -104,6 +116,8 @@ def run(store: PriceStore, slice_meta: Dict[str, Any], router_kind: str,
                 route = llm.route(ctx)
             except RouterUnavailable as e:
                 route = heuristic_route(ctx, error=str(e))
+        elif router_kind == "chain":
+            route = chain_route(ctx)
         else:
             route = heuristic_route(ctx)
 
@@ -178,6 +192,7 @@ def print_summary(title: str, s: Dict[str, Any]) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--slice")
+    ap.add_argument("--router", default="fitness", choices=["fitness", "chain", "both"])
     ap.add_argument("--llm-sample", type=int, default=0,
                     help="LLM 라우터로 비교할 무작위 표본 수 (0이면 안 함)")
     ap.add_argument("--sleep", type=float, default=14.0)
@@ -192,19 +207,28 @@ def main() -> int:
     print(f"종목 {meta['symbol_count']}개, 판정일 "
           f"{sum(len(g['decision_dates']) for g in meta['decision_grid'].values())}개(시장 합산)\n")
 
-    print("[규칙 라우터] 전수 실행")
-    t0 = time.perf_counter()
-    rows = run(store, meta, "heuristic")
-    print(f"  {len(rows):,}건 / {time.perf_counter()-t0:.1f}초")
-    heur = summarize(rows)
-    print_summary("규칙 라우터 전수", heur)
+    kinds = ["chain", "heuristic"] if args.router == "both" else (
+        ["chain"] if args.router == "chain" else ["heuristic"])
+    labels = {"chain": "체인 라우터(구버전)", "heuristic": "적합도 라우터"}
+
+    rows = None
+    summaries = {}
+    for kind in kinds:
+        t0 = time.perf_counter()
+        r = run(store, meta, kind)
+        print(f"[{labels[kind]}] {len(r):,}건 / {time.perf_counter()-t0:.1f}초")
+        summaries[kind] = summarize(r)
+        print_summary(labels[kind], summaries[kind])
+        if kind == "heuristic" or rows is None:
+            rows = r
+    heur = summaries.get("heuristic", summaries[kinds[0]])
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     tag = meta["slice_id"]
     (OUT_DIR / f"{tag}_heuristic.json").write_text(
         json.dumps({"summary": heur, "rows": rows}, ensure_ascii=False), encoding="utf-8")
 
-    result = {"slice_id": tag, "horizons": HORIZONS, "heuristic": heur}
+    result = {"slice_id": tag, "horizons": HORIZONS, "routers": summaries}
 
     if args.llm_sample:
         rng = random.Random(args.seed)

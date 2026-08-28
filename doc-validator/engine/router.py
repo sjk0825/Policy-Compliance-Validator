@@ -30,6 +30,10 @@ class RouteDecision:
     latency_ms: Optional[float] = None
     error: Optional[str] = None
     candidates: List[str] = field(default_factory=list)
+    # 규칙 라우터가 매긴 프로그램별 적합도와 1·2위 격차.
+    # 왜 그 프로그램이 골라졌는지 나중에 되짚기 위해 남긴다.
+    scores: Optional[Dict[str, float]] = None
+    margin: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -40,6 +44,8 @@ class RouteDecision:
             "latency_ms": self.latency_ms,
             "error": self.error,
             "candidates": self.candidates,
+            "scores": self.scores,
+            "margin": self.margin,
         }
 
 
@@ -190,10 +196,37 @@ def _parse_json(text: str) -> Optional[Dict[str, Any]]:
 
 
 def heuristic_route(ctx: Dict[str, Any], error: Optional[str] = None) -> RouteDecision:
-    """LLM 없이도 돌아가는 규칙 기반 라우터.
+    """규칙 기반 라우터. 적합도가 가장 높은 프로그램을 고른다.
 
-    LLM 라우터와 같은 관점(변동성 확대 → 역추세, 추세 정상 → 추세추종)을
-    쓰되 임계값을 고정한다. 결과를 비교하면 LLM이 실제로 뭘 더 하는지 보인다.
+    우선순위 체인(if/elif)을 쓰지 않는다. 체인은 먼저 걸리는 조건이 이기므로
+    순서가 곧 결과가 된다. 실제로 낙폭이 깊은 구간은 defensive 조건에 먼저
+    걸려서 mean_reversion이 도달 불가였다. 각 프로그램이 스스로 적합도를
+    내고 최댓값을 고르면 그런 순서 효과가 없다.
+
+    defensive는 고정 바닥값을 낸다. 전문 프로그램이 그 값을 넘지 못하면,
+    즉 어느 쪽도 자기 국면이라고 말하지 못하면 방어가 이긴다.
+    """
+    scores = {name: round(p.fitness(ctx), 4) for name, p in programs.REGISTRY.items()}
+    # 동점이면 이름 순이 아니라 방어가 이기도록 기본값을 뒤로 둔다.
+    best = max(scores, key=lambda n: (scores[n], n == programs.DEFAULT_PROGRAM))
+
+    ranked = sorted(scores.items(), key=lambda kv: -kv[1])
+    gap = round(ranked[0][1] - ranked[1][1], 4) if len(ranked) > 1 else None
+    reason = "적합도 " + ", ".join(f"{n} {v:.2f}" for n, v in ranked)
+
+    return RouteDecision(
+        program=best, reason=reason,
+        source="fallback" if error else "heuristic",
+        error=error, candidates=list(programs.REGISTRY),
+        scores=scores, margin=gap,
+    )
+
+
+def chain_route(ctx: Dict[str, Any], error: Optional[str] = None) -> RouteDecision:
+    """구버전 우선순위 체인. 적합도 라우터와 비교하기 위해 남겨둔다.
+
+    먼저 걸리는 조건이 이기므로 순서가 결과를 바꾼다. 낙폭이 깊으면
+    defensive가 먼저 잡아 mean_reversion이 도달하지 못한다.
     """
     v, t = ctx["volatility"], ctx["trend"]
     dd = (ctx.get("drawdown") or {}).get("pct")
@@ -208,11 +241,9 @@ def heuristic_route(ctx: Dict[str, Any], error: Optional[str] = None) -> RouteDe
     else:
         name, why = programs.DEFAULT_PROGRAM, "뚜렷한 국면 신호 없음"
 
-    return RouteDecision(
-        program=name, reason=why,
-        source="fallback" if error else "heuristic",
-        error=error, candidates=list(programs.REGISTRY),
-    )
+    return RouteDecision(program=name, reason=why,
+                         source="fallback" if error else "chain",
+                         error=error, candidates=list(programs.REGISTRY))
 
 
 def route(ctx: Dict[str, Any], router: Optional[LLMRouter] = None,

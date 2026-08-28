@@ -1,7 +1,7 @@
 """추세추종. 오르던 것이 계속 오른다는 쪽에 선다."""
 from typing import Any, Dict
 
-from .base import Program, ProgramResult, Signal
+from .base import Program, ProgramResult, Signal, ramp
 
 
 class TrendFollowing(Program):
@@ -12,6 +12,15 @@ class TrendFollowing(Program):
         "가격이 이동평균 위에 있고 단기선이 장기선 위로 벌어져 있으며 변동성이 "
         "안정적일 때. 방향이 잡힌 상승 국면에서 그 방향에 붙는다."
     )
+
+    def fitness(self, ctx: Dict[str, Any]) -> float:
+        t, v = ctx["trend"], ctx["volatility"]
+        return self.mean_fit([
+            ramp(t["px_vs_sma60_pct"], 0.0, 5.0),        # 60일선 위로 벌어질수록
+            ramp(t["sma20_vs_sma60_pct"], 0.0, 3.0),     # 단기선이 장기선 위로
+            ramp(t["slope20_pct_per_day"], 0.0, 0.15),   # 기울기가 설수록
+            ramp(v["vol_ratio_20_60"], 1.30, 1.00),      # 변동성이 안정될수록
+        ])
 
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:
         t, v = ctx["trend"], ctx["volatility"]

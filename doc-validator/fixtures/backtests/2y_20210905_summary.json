@@ -1,0 +1,114 @@
+{
+  "slice_id": "2y_20210905",
+  "horizons": [
+    1,
+    3,
+    10,
+    21,
+    63
+  ],
+  "routers": {
+    "chain": {
+      "n": 3886,
+      "horizons": {
+        "1": {
+          "scored": 3886,
+          "hit_rate": 51.21,
+          "expected": 50.72,
+          "edge_pp": 0.49,
+          "avg_ret_all": -0.09,
+          "avg_ret_when_true": -0.051
+        },
+        "3": {
+          "scored": 3886,
+          "hit_rate": 48.15,
+          "expected": 51.1,
+          "edge_pp": -2.96,
+          "avg_ret_all": 0.025,
+          "avg_ret_when_true": -0.066
+        },
+        "10": {
+          "scored": 3886,
+          "hit_rate": 49.97,
+          "expected": 51.34,
+          "edge_pp": -1.36,
+          "avg_ret_all": -0.001,
+          "avg_ret_when_true": 0.006
+        },
+        "21": {
+          "scored": 3886,
+          "hit_rate": 48.89,
+          "expected": 51.72,
+          "edge_pp": -2.82,
+          "avg_ret_all": 0.081,
+          "avg_ret_when_true": -0.018
+        },
+        "63": {
+          "scored": 3886,
+          "hit_rate": 49.49,
+          "expected": 53.5,
+          "edge_pp": -4.01,
+          "avg_ret_all": 0.062,
+          "avg_ret_when_true": -0.079
+        }
+      },
+      "decision_true_pct": 48.1,
+      "program_mix": {
+        "trend_following": 26.6,
+        "mean_reversion": 15.2,
+        "defensive": 58.3
+      }
+    },
+    "heuristic": {
+      "n": 3886,
+      "horizons": {
+        "1": {
+          "scored": 3886,
+          "hit_rate": 48.04,
+          "expected": 49.64,
+          "edge_pp": -1.6,
+          "avg_ret_all": -0.09,
+          "avg_ret_when_true": -0.102
+        },
+        "3": {
+          "scored": 3886,
+          "hit_rate": 47.71,
+          "expected": 50.05,
+          "edge_pp": -2.34,
+          "avg_ret_all": 0.025,
+          "avg_ret_when_true": -0.051
+        },
+        "10": {
+          "scored": 3886,
+          "hit_rate": 48.66,
+          "expected": 50.29,
+          "edge_pp": -1.63,
+          "avg_ret_all": -0.001,
+          "avg_ret_when_true": 0.005
+        },
+        "21": {
+          "scored": 3886,
+          "hit_rate": 49.33,
+          "expected": 50.49,
+          "edge_pp": -1.16,
+          "avg_ret_all": 0.081,
+          "avg_ret_when_true": 0.093
+        },
+        "63": {
+          "scored": 3886,
+          "hit_rate": 51.57,
+          "expected": 49.75,
+          "edge_pp": 1.81,
+          "avg_ret_all": 0.062,
+          "avg_ret_when_true": 0.681
+        }
+      },
+      "decision_true_pct": 71.8,
+      "program_mix": {
+        "trend_following": 44.9,
+        "mean_reversion": 21.4,
+        "defensive": 33.7
+      }
+    }
+  }
+}
