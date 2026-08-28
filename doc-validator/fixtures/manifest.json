@@ -1,9 +1,9 @@
 {
   "source": "FinanceDataReader",
   "requested_start": "2010-01-01",
-  "fetched_at": "2026-08-28T16:21:54",
-  "symbol_count": 38,
-  "row_count": 132442,
+  "fetched_at": "2026-08-28T16:52:47",
+  "symbol_count": 37,
+  "row_count": 130958,
   "failures": [],
   "symbols": [
     {
@@ -280,17 +280,6 @@
       "first_date": "2014-06-10",
       "last_date": "2026-08-28",
       "sha256": "bd3e3a1539e99fe7ee3647de1ea77061e5032a25f45779817baaca2430da9834"
-    },
-    {
-      "group": "kr_etf",
-      "symbol": "360750",
-      "name": "TIGER 미국S&P500",
-      "kind": "해외지수",
-      "file": "fixtures/data/kr_etf/360750.csv",
-      "rows": 1484,
-      "first_date": "2020-08-07",
-      "last_date": "2026-08-28",
-      "sha256": "0d4aceaacf31f9e5acdff957f685fb6240e8c185c3e3e7ee56e1809c0cb1bf3f"
     },
     {
       "group": "kr_etf",

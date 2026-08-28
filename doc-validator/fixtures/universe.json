@@ -1,63 +1,190 @@
 {
   "start": "2010-01-01",
-  "note": "KRX는 소스 제약으로 2014-06-10 부근이 하한이다. 실제 커버리지는 manifest.json을 본다.",
+  "note": "KRX는 소스 제약으로 2014-06-10 부근이 하한이다. 종목마다 상장일이 달라 커버리지가 제각각이며, 실제 범위는 manifest.json을 본다.",
   "groups": {
     "kr_stock": {
       "label": "한국 우량주",
       "symbols": [
-        {"symbol": "005930", "name": "삼성전자"},
-        {"symbol": "000660", "name": "SK하이닉스"},
-        {"symbol": "005380", "name": "현대차"},
-        {"symbol": "000270", "name": "기아"},
-        {"symbol": "005490", "name": "POSCO홀딩스"},
-        {"symbol": "035420", "name": "NAVER"},
-        {"symbol": "035720", "name": "카카오"},
-        {"symbol": "068270", "name": "셀트리온"},
-        {"symbol": "207940", "name": "삼성바이오로직스"},
-        {"symbol": "105560", "name": "KB금융"}
+        {
+          "symbol": "005930",
+          "name": "삼성전자"
+        },
+        {
+          "symbol": "000660",
+          "name": "SK하이닉스"
+        },
+        {
+          "symbol": "005380",
+          "name": "현대차"
+        },
+        {
+          "symbol": "000270",
+          "name": "기아"
+        },
+        {
+          "symbol": "005490",
+          "name": "POSCO홀딩스"
+        },
+        {
+          "symbol": "035420",
+          "name": "NAVER"
+        },
+        {
+          "symbol": "035720",
+          "name": "카카오"
+        },
+        {
+          "symbol": "068270",
+          "name": "셀트리온"
+        },
+        {
+          "symbol": "207940",
+          "name": "삼성바이오로직스"
+        },
+        {
+          "symbol": "105560",
+          "name": "KB금융"
+        }
       ]
     },
     "us_stock": {
       "label": "미국 우량주",
       "symbols": [
-        {"symbol": "AAPL",  "name": "Apple"},
-        {"symbol": "MSFT",  "name": "Microsoft"},
-        {"symbol": "NVDA",  "name": "NVIDIA"},
-        {"symbol": "GOOGL", "name": "Alphabet"},
-        {"symbol": "AMZN",  "name": "Amazon"},
-        {"symbol": "META",  "name": "Meta"},
-        {"symbol": "TSLA",  "name": "Tesla"},
-        {"symbol": "JPM",   "name": "JPMorgan"},
-        {"symbol": "JNJ",   "name": "Johnson & Johnson"},
-        {"symbol": "XOM",   "name": "Exxon Mobil"}
+        {
+          "symbol": "AAPL",
+          "name": "Apple"
+        },
+        {
+          "symbol": "MSFT",
+          "name": "Microsoft"
+        },
+        {
+          "symbol": "NVDA",
+          "name": "NVIDIA"
+        },
+        {
+          "symbol": "GOOGL",
+          "name": "Alphabet"
+        },
+        {
+          "symbol": "AMZN",
+          "name": "Amazon"
+        },
+        {
+          "symbol": "META",
+          "name": "Meta"
+        },
+        {
+          "symbol": "TSLA",
+          "name": "Tesla"
+        },
+        {
+          "symbol": "JPM",
+          "name": "JPMorgan"
+        },
+        {
+          "symbol": "JNJ",
+          "name": "Johnson & Johnson"
+        },
+        {
+          "symbol": "XOM",
+          "name": "Exxon Mobil"
+        }
       ]
     },
     "kr_etf": {
       "label": "한국 ETF",
       "symbols": [
-        {"symbol": "069500", "name": "KODEX 200",            "kind": "지수"},
-        {"symbol": "229200", "name": "KODEX 코스닥150",       "kind": "지수"},
-        {"symbol": "122630", "name": "KODEX 레버리지",         "kind": "레버리지"},
-        {"symbol": "114800", "name": "KODEX 인버스",           "kind": "인버스"},
-        {"symbol": "133690", "name": "TIGER 미국나스닥100",    "kind": "해외지수"},
-        {"symbol": "360750", "name": "TIGER 미국S&P500",      "kind": "해외지수"},
-        {"symbol": "132030", "name": "KODEX 골드선물(H)",      "kind": "금"},
-        {"symbol": "148070", "name": "KOSEF 국고채10년",       "kind": "채권"}
+        {
+          "symbol": "069500",
+          "name": "KODEX 200",
+          "kind": "지수"
+        },
+        {
+          "symbol": "229200",
+          "name": "KODEX 코스닥150",
+          "kind": "지수"
+        },
+        {
+          "symbol": "122630",
+          "name": "KODEX 레버리지",
+          "kind": "레버리지"
+        },
+        {
+          "symbol": "114800",
+          "name": "KODEX 인버스",
+          "kind": "인버스"
+        },
+        {
+          "symbol": "133690",
+          "name": "TIGER 미국나스닥100",
+          "kind": "해외지수"
+        },
+        {
+          "symbol": "132030",
+          "name": "KODEX 골드선물(H)",
+          "kind": "금"
+        },
+        {
+          "symbol": "148070",
+          "name": "KOSEF 국고채10년",
+          "kind": "채권"
+        }
       ]
     },
     "us_etf": {
       "label": "미국 ETF",
       "symbols": [
-        {"symbol": "SPY",     "name": "S&P 500",              "kind": "지수"},
-        {"symbol": "QQQ",     "name": "Nasdaq 100",           "kind": "지수"},
-        {"symbol": "IWM",     "name": "Russell 2000",         "kind": "지수"},
-        {"symbol": "EEM",     "name": "MSCI Emerging",        "kind": "지수"},
-        {"symbol": "GLD",     "name": "Gold",                 "kind": "금"},
-        {"symbol": "SLV",     "name": "Silver",               "kind": "은"},
-        {"symbol": "TLT",     "name": "20+ Year Treasury",    "kind": "채권"},
-        {"symbol": "UUP",     "name": "US Dollar Index",      "kind": "통화"},
-        {"symbol": "DBMF",    "name": "Managed Futures",      "kind": "역추세"},
-        {"symbol": "BTC/USD", "name": "Bitcoin",              "kind": "암호화폐"}
+        {
+          "symbol": "SPY",
+          "name": "S&P 500",
+          "kind": "지수"
+        },
+        {
+          "symbol": "QQQ",
+          "name": "Nasdaq 100",
+          "kind": "지수"
+        },
+        {
+          "symbol": "IWM",
+          "name": "Russell 2000",
+          "kind": "지수"
+        },
+        {
+          "symbol": "EEM",
+          "name": "MSCI Emerging",
+          "kind": "지수"
+        },
+        {
+          "symbol": "GLD",
+          "name": "Gold",
+          "kind": "금"
+        },
+        {
+          "symbol": "SLV",
+          "name": "Silver",
+          "kind": "은"
+        },
+        {
+          "symbol": "TLT",
+          "name": "20+ Year Treasury",
+          "kind": "채권"
+        },
+        {
+          "symbol": "UUP",
+          "name": "US Dollar Index",
+          "kind": "통화"
+        },
+        {
+          "symbol": "DBMF",
+          "name": "Managed Futures",
+          "kind": "역추세"
+        },
+        {
+          "symbol": "BTC/USD",
+          "name": "Bitcoin",
+          "kind": "암호화폐"
+        }
       ]
     }
   }

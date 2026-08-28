@@ -4,11 +4,13 @@
 하나로 짜고, 나중에 다른 구간으로 검증하는 편이 낫다. 그래서 구간을
 무작위로 뽑되 seed를 남겨 언제든 같은 슬라이스를 복원할 수 있게 한다.
 
-기본은 유니버스 전 종목이 구간을 온전히 덮는 창만 뽑는다. 종목이 중간에
-빠지면 비교가 어긋나기 때문이다.
+종목마다 상장일이 달라 커버리지는 제각각이다. 전 종목이 덮는 창만
+고르면 가장 늦게 상장한 종목 하나가 창 전체를 묶어버리므로, 그렇게 하지
+않는다. 창 안에 데이터가 있는 종목은 모두 담고 커버리지를 기록만 한다.
 
-    python scripts/make_slice.py                  # 무작위 seed
-    python scripts/make_slice.py --seed 20260828  # 특정 슬라이스 복원
+    python scripts/make_slice.py                      # 무작위 seed
+    python scripts/make_slice.py --seed 13102146      # 특정 슬라이스 복원
+    python scripts/make_slice.py --start 2021-09-05   # 구간 직접 지정
     python scripts/make_slice.py --years 3
 """
 import argparse
@@ -45,6 +47,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, help="생략하면 무작위로 뽑고 결과에 기록한다")
     ap.add_argument("--years", type=int, default=2)
+    ap.add_argument("--start", help="시작일을 직접 지정한다 (지정 시 seed는 쓰지 않는다)")
     ap.add_argument("--label", help="슬라이스 이름 접미사")
     args = ap.parse_args()
 
@@ -56,32 +59,40 @@ def main() -> int:
     symbols = manifest["symbols"]
 
     span = timedelta(days=int(365.25 * args.years))
-    # 모든 종목이 창 전체를 덮어야 한다.
-    earliest = max(d(e["first_date"]) for e in symbols)
-    latest = min(d(e["last_date"]) for e in symbols)
+    # 종목별 상장일에 맞추지 않는다. 전체 가용 범위에서 창을 뽑고,
+    # 그 안에 데이터가 있는 종목을 담는다.
+    earliest = min(d(e["first_date"]) for e in symbols)
+    latest = max(d(e["last_date"]) for e in symbols)
     if earliest + span > latest:
-        print(f"{args.years}년 창을 뽑을 수 없습니다. 공통 구간: {earliest} ~ {latest}")
+        print(f"{args.years}년 창을 뽑을 수 없습니다. 가용 범위: {earliest} ~ {latest}")
         return 1
 
-    seed = args.seed if args.seed is not None else random.SystemRandom().randrange(1, 10**8)
-    rng = random.Random(seed)
-
-    max_offset = (latest - span - earliest).days
-    start = earliest + timedelta(days=rng.randrange(max_offset + 1))
+    seed = None
+    if args.start:
+        start = d(args.start)
+        if start < earliest or start + span > latest:
+            print(f"구간이 가용 범위를 벗어납니다: {earliest} ~ {latest}")
+            return 1
+    else:
+        seed = args.seed if args.seed is not None else random.SystemRandom().randrange(1, 10**8)
+        rng = random.Random(seed)
+        start = earliest + timedelta(days=rng.randrange((latest - span - earliest).days + 1))
     end = start + span
 
-    slice_id = f"{args.years}y_{start:%Y%m%d}_seed{seed}"
+    slice_id = f"{args.years}y_{start:%Y%m%d}" + (f"_seed{seed}" if seed is not None else "")
     if args.label:
         slice_id += f"_{args.label}"
     out_root = SLICES_DIR / slice_id
 
     print(f"슬라이스 {slice_id}")
     print(f"  구간   {start} ~ {end}  ({args.years}년)")
-    print(f"  seed   {seed}   (공통 가용 구간 {earliest} ~ {latest})\n")
+    print(f"  seed   {seed if seed is not None else '(--start 직접 지정)'}"
+          f"   (가용 범위 {earliest} ~ {latest})\n")
 
     import pandas as pd
 
     entries: List[Dict[str, Any]] = []
+    missing: List[Dict[str, Any]] = []
     for e in symbols:
         src = ROOT / e["file"]
         if not src.exists():
@@ -91,7 +102,10 @@ def main() -> int:
         df = pd.read_csv(src, dtype={"Date": str})
         win = df[(df["Date"] >= start.isoformat()) & (df["Date"] <= end.isoformat())]
         if win.empty:
-            print(f"  ! {e['symbol']} 구간 내 데이터 없음")
+            print(f"  - {e['symbol']:<9} {e['name'][:16]:<18} 구간 내 데이터 없음 "
+                  f"(원본 {e['first_date']}~)")
+            missing.append({"symbol": e["symbol"], "name": e.get("name"),
+                            "group": e["group"], "source_first_date": e["first_date"]})
             continue
 
         dst = out_root / e["group"] / f"{e['symbol'].replace('/', '-')}.csv"
@@ -108,6 +122,10 @@ def main() -> int:
             "rows": len(win),
             "first_date": dates[0],
             "last_date": dates[-1],
+            # 창 시작 시점에 아직 상장 전이라 앞부분이 잘렸는지.
+            # 창 시작일이 휴장일이어서 첫 거래일이 밀린 경우와 구분해야 하므로
+            # 거래일이 아니라 원본 시작일과 비교한다.
+            "starts_late": d(e["first_date"]) > start,
         })
 
     # 판정 기준일은 시장별 거래일 달력이 다르므로 따로 뽑는다.
@@ -150,6 +168,8 @@ def main() -> int:
         "source_manifest_fetched_at": manifest["fetched_at"],
         "symbol_count": len(entries),
         "row_count": sum(e["rows"] for e in entries),
+        "missing_symbols": missing,
+        "partial_symbols": [e["symbol"] for e in entries if e["starts_late"]],
         "decision_grid": grids,
         "symbols": entries,
     }
@@ -157,9 +177,15 @@ def main() -> int:
         json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
 
-    print(f"\n종목 {meta['symbol_count']}개 / {meta['row_count']:,}행")
+    print(f"\n종목 {meta['symbol_count']}개 / {meta['row_count']:,}행", end="")
+    if meta["partial_symbols"]:
+        print(f"  (구간 중간부터 시작: {', '.join(meta['partial_symbols'])})", end="")
+    if missing:
+        print(f"  (제외 {len(missing)}종목)", end="")
+    print()
     print(f"출력: fixtures/slices/{slice_id}/")
-    print(f"복원: python scripts/make_slice.py --seed {seed} --years {args.years}")
+    restore = (f"--seed {seed}" if seed is not None else f"--start {start}")
+    print(f"복원: python scripts/make_slice.py {restore} --years {args.years}")
     return 0
 
 
