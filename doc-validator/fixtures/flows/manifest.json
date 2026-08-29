@@ -1,0 +1,435 @@
+{
+  "source": "naver finance (item/frgn)",
+  "fetched_at": "2026-08-29T19:58:57",
+  "fields": [
+    "InstNet",
+    "ForeignNet",
+    "ForeignShares",
+    "ForeignRatio"
+  ],
+  "symbol_count": 60,
+  "row_count": 72000,
+  "failures": [],
+  "symbols": [
+    {
+      "symbol": "000100",
+      "file": "fixtures/flows/000100.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000120",
+      "file": "fixtures/flows/000120.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000150",
+      "file": "fixtures/flows/000150.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000155",
+      "file": "fixtures/flows/000155.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000240",
+      "file": "fixtures/flows/000240.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000270",
+      "file": "fixtures/flows/000270.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000500",
+      "file": "fixtures/flows/000500.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000660",
+      "file": "fixtures/flows/000660.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000720",
+      "file": "fixtures/flows/000720.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000810",
+      "file": "fixtures/flows/000810.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000880",
+      "file": "fixtures/flows/000880.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "000990",
+      "file": "fixtures/flows/000990.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001040",
+      "file": "fixtures/flows/001040.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001120",
+      "file": "fixtures/flows/001120.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001430",
+      "file": "fixtures/flows/001430.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001440",
+      "file": "fixtures/flows/001440.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001450",
+      "file": "fixtures/flows/001450.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001720",
+      "file": "fixtures/flows/001720.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "001800",
+      "file": "fixtures/flows/001800.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "002380",
+      "file": "fixtures/flows/002380.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "002790",
+      "file": "fixtures/flows/002790.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "003230",
+      "file": "fixtures/flows/003230.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "003490",
+      "file": "fixtures/flows/003490.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "003550",
+      "file": "fixtures/flows/003550.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "003670",
+      "file": "fixtures/flows/003670.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "003690",
+      "file": "fixtures/flows/003690.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "004020",
+      "file": "fixtures/flows/004020.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "004170",
+      "file": "fixtures/flows/004170.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "004370",
+      "file": "fixtures/flows/004370.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "004800",
+      "file": "fixtures/flows/004800.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "004990",
+      "file": "fixtures/flows/004990.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005380",
+      "file": "fixtures/flows/005380.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005385",
+      "file": "fixtures/flows/005385.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005387",
+      "file": "fixtures/flows/005387.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005440",
+      "file": "fixtures/flows/005440.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005490",
+      "file": "fixtures/flows/005490.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005830",
+      "file": "fixtures/flows/005830.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005850",
+      "file": "fixtures/flows/005850.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005930",
+      "file": "fixtures/flows/005930.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005935",
+      "file": "fixtures/flows/005935.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "005940",
+      "file": "fixtures/flows/005940.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "006040",
+      "file": "fixtures/flows/006040.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "006260",
+      "file": "fixtures/flows/006260.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "006280",
+      "file": "fixtures/flows/006280.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "006360",
+      "file": "fixtures/flows/006360.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "006400",
+      "file": "fixtures/flows/006400.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "006800",
+      "file": "fixtures/flows/006800.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "007070",
+      "file": "fixtures/flows/007070.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "007340",
+      "file": "fixtures/flows/007340.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "007660",
+      "file": "fixtures/flows/007660.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "008770",
+      "file": "fixtures/flows/008770.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "008930",
+      "file": "fixtures/flows/008930.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "009150",
+      "file": "fixtures/flows/009150.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "069500",
+      "file": "fixtures/flows/069500.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "114800",
+      "file": "fixtures/flows/114800.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "122630",
+      "file": "fixtures/flows/122630.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "132030",
+      "file": "fixtures/flows/132030.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "133690",
+      "file": "fixtures/flows/133690.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "148070",
+      "file": "fixtures/flows/148070.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    },
+    {
+      "symbol": "229200",
+      "file": "fixtures/flows/229200.csv",
+      "rows": 1200,
+      "first_date": "2021-10-05",
+      "last_date": "2026-08-28"
+    }
+  ]
+}

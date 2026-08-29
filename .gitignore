@@ -13,6 +13,8 @@ doc-validator/fixtures/data/
 doc-validator/fixtures/wide/**/*.csv
 # 선행지수 원자료. manifest만 커밋한다.
 doc-validator/fixtures/leaders/*.csv
+# 수급 원자료. manifest만 커밋한다.
+doc-validator/fixtures/flows/*.csv
 # 슬라이스 CSV도 seed로 복원 가능하다. slice.json만 커밋한다.
 doc-validator/fixtures/slices/**/*.csv
 
