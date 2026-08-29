@@ -1,0 +1,115 @@
+{
+  "period": "final",
+  "range": [
+    "2023-01-01",
+    "2026-12-31"
+  ],
+  "balanced": {
+    "21": {
+      "n": 36606,
+      "win_rate": 50.35,
+      "median": 0.057,
+      "mean": 1.168,
+      "skew": 3.36,
+      "win_loss": 1.35
+    },
+    "63": {
+      "n": 34932,
+      "win_rate": 50.0,
+      "median": 0.0,
+      "mean": 3.079,
+      "skew": 4.84,
+      "win_loss": 1.56
+    }
+  },
+  "steady": {
+    "21": {
+      "n": 28121,
+      "win_rate": 50.56,
+      "median": 0.091,
+      "mean": 1.245,
+      "skew": 2.56,
+      "win_loss": 1.36
+    },
+    "63": {
+      "n": 26813,
+      "win_rate": 50.19,
+      "median": 0.048,
+      "mean": 3.235,
+      "skew": 4.83,
+      "win_loss": 1.57
+    }
+  },
+  "steady_strong": {
+    "21": {
+      "n": 16544,
+      "win_rate": 50.16,
+      "median": 0.02,
+      "mean": 0.738,
+      "skew": 2.05,
+      "win_loss": 1.24
+    },
+    "63": {
+      "n": 15750,
+      "win_rate": 49.75,
+      "median": -0.026,
+      "mean": 1.944,
+      "skew": 5.39,
+      "win_loss": 1.4
+    }
+  },
+  "overnight": {
+    "21": {
+      "n": 35814,
+      "win_rate": 50.43,
+      "median": 0.074,
+      "mean": 1.139,
+      "skew": 3.4,
+      "win_loss": 1.34
+    },
+    "63": {
+      "n": 34169,
+      "win_rate": 49.96,
+      "median": 0.0,
+      "mean": 3.054,
+      "skew": 4.93,
+      "win_loss": 1.57
+    }
+  },
+  "win_rate": {
+    "21": {
+      "n": 13630,
+      "win_rate": 48.52,
+      "median": -0.172,
+      "mean": 0.395,
+      "skew": 2.48,
+      "win_loss": 1.2
+    },
+    "63": {
+      "n": 12923,
+      "win_rate": 48.02,
+      "median": -0.552,
+      "mean": 1.428,
+      "skew": 5.11,
+      "win_loss": 1.39
+    }
+  },
+  "aggressive": {
+    "21": {
+      "n": 34698,
+      "win_rate": 50.28,
+      "median": 0.044,
+      "mean": 1.123,
+      "skew": 3.39,
+      "win_loss": 1.34
+    },
+    "63": {
+      "n": 33155,
+      "win_rate": 49.9,
+      "median": 0.0,
+      "mean": 3.014,
+      "skew": 4.83,
+      "win_loss": 1.56
+    }
+  }
+}
