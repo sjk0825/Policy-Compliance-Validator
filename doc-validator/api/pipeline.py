@@ -60,6 +60,8 @@ class Judgement:
     normalized_ticker: str
     market: str
     result: bool
+    # 비중 프로그램이 답한 목표 비중. 방향 프로그램이면 None이다.
+    weight: Optional[float]
     ruleset_version: str
     created_at: datetime
     as_of_date: date
@@ -74,6 +76,7 @@ class Judgement:
             "normalized_ticker": self.normalized_ticker,
             "market": self.market,
             "result": self.result,
+            "weight": self.weight,
             "ruleset_version": self.ruleset_version,
             "created_at": self.created_at.isoformat(),
             "as_of_date": self.as_of_date.isoformat(),
@@ -139,7 +142,8 @@ def _run_engine(rec: "_Recorder", symbol: str, market: str, as_of: date) -> Dict
             step_input={"symbol": symbol},
             fn=lambda: {"available": False},
         )
-        return {"result": True, "ruleset_version": FALLBACK_RULESET_VERSION}
+        return {"result": True, "weight": None,
+                "ruleset_version": FALLBACK_RULESET_VERSION}
 
     try:
         decision = engine_decide(symbol, as_of.isoformat())
@@ -150,7 +154,8 @@ def _run_engine(rec: "_Recorder", symbol: str, market: str, as_of: date) -> Dict
             step_input={"symbol": symbol, "as_of": as_of.isoformat()},
             fn=lambda: {"available": False, "error": f"{type(exc).__name__}: {exc}"},
         )
-        return {"result": True, "ruleset_version": FALLBACK_RULESET_VERSION}
+        return {"result": True, "weight": None,
+                "ruleset_version": FALLBACK_RULESET_VERSION}
 
     ctx = decision.context
     rec.record(
@@ -199,13 +204,15 @@ def _run_engine(rec: "_Recorder", symbol: str, market: str, as_of: date) -> Dict
         ),
         step_input={"program": pr["program"], "version": pr["version"]},
         fn=lambda: {
-            "result": pr["decision"], "confidence": pr["confidence"],
+            "kind": pr.get("kind"), "result": pr["decision"],
+            "weight": pr.get("weight"), "confidence": pr["confidence"],
             "summary": pr["summary"], "signals": pr["signals"],
         },
     )
 
     return {
         "result": pr["decision"],
+        "weight": pr.get("weight"),
         "ruleset_version": f"{RULESET_VERSION}:{pr['program']}.{pr['version']}",
     }
 
@@ -240,6 +247,7 @@ def run(ticker: str, as_of: Optional[date] = None) -> Judgement:
     decision = _run_engine(rec, normalized, market, as_of)
     ruleset = decision["ruleset_version"]
     result = decision["result"]
+    weight = decision.get("weight")
 
     judgement_id = rec.record(
         name="finalize",
@@ -258,6 +266,7 @@ def run(ticker: str, as_of: Optional[date] = None) -> Judgement:
         normalized_ticker=normalized,
         market=market,
         result=result,
+        weight=weight,
         ruleset_version=ruleset,
         created_at=datetime.now(),
         as_of_date=as_of,

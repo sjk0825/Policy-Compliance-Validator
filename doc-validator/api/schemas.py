@@ -57,6 +57,7 @@ class JudgementOut(BaseModel):
     normalized_ticker: str
     market: str
     result: bool
+    weight: Optional[float] = None
     ruleset_version: str
     created_at: str
     as_of_date: str
@@ -72,6 +73,7 @@ class JudgementSummary(BaseModel):
     normalized_ticker: str
     market: str
     result: bool
+    weight: Optional[float] = None
     ruleset_version: str
     created_at: str
     as_of_date: str

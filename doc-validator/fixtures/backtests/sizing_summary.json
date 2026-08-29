@@ -1,0 +1,286 @@
+{
+  "SPY": {
+    "탐색": {
+      "vol_target": {
+        "cagr": 7.97,
+        "sharpe": 0.55,
+        "mdd": -19.3,
+        "vol": 15.5,
+        "turnover_per_year": 5.5
+      },
+      "vol_target_conservative": {
+        "cagr": 3.86,
+        "sharpe": 0.42,
+        "mdd": -14.3,
+        "vol": 10.4,
+        "turnover_per_year": 1.0
+      },
+      "buy_and_hold": {
+        "cagr": 5.02,
+        "sharpe": 0.43,
+        "mdd": -20.2,
+        "vol": 13.7,
+        "turnover_per_year": 0.0
+      }
+    },
+    "검증": {
+      "vol_target": {
+        "cagr": 9.09,
+        "sharpe": 0.57,
+        "mdd": -21.2,
+        "vol": 16.7,
+        "turnover_per_year": 6.3
+      },
+      "vol_target_conservative": {
+        "cagr": 8.07,
+        "sharpe": 0.68,
+        "mdd": -16.5,
+        "vol": 12.3,
+        "turnover_per_year": 1.7
+      },
+      "buy_and_hold": {
+        "cagr": 11.22,
+        "sharpe": 0.58,
+        "mdd": -34.1,
+        "vol": 22.6,
+        "turnover_per_year": 0.0
+      }
+    },
+    "최종": {
+      "vol_target": {
+        "cagr": 19.24,
+        "sharpe": 1.1,
+        "mdd": -19.2,
+        "vol": 15.8,
+        "turnover_per_year": 6.3
+      },
+      "vol_target_conservative": {
+        "cagr": 14.89,
+        "sharpe": 1.33,
+        "mdd": -13.5,
+        "vol": 10.8,
+        "turnover_per_year": 0.8
+      },
+      "buy_and_hold": {
+        "cagr": 21.28,
+        "sharpe": 1.36,
+        "mdd": -19.0,
+        "vol": 15.1,
+        "turnover_per_year": 0.0
+      }
+    }
+  },
+  "QQQ": {
+    "탐색": {
+      "vol_target": {
+        "cagr": 10.29,
+        "sharpe": 0.64,
+        "mdd": -19.5,
+        "vol": 16.5,
+        "turnover_per_year": 6.3
+      },
+      "vol_target_conservative": {
+        "cagr": 8.6,
+        "sharpe": 0.73,
+        "mdd": -13.0,
+        "vol": 12.3,
+        "turnover_per_year": 2.1
+      },
+      "buy_and_hold": {
+        "cagr": 10.58,
+        "sharpe": 0.66,
+        "mdd": -23.2,
+        "vol": 17.4,
+        "turnover_per_year": 0.0
+      }
+    },
+    "검증": {
+      "vol_target": {
+        "cagr": 12.44,
+        "sharpe": 0.75,
+        "mdd": -23.2,
+        "vol": 16.5,
+        "turnover_per_year": 4.5
+      },
+      "vol_target_conservative": {
+        "cagr": 10.86,
+        "sharpe": 0.83,
+        "mdd": -17.0,
+        "vol": 13.1,
+        "turnover_per_year": 2.0
+      },
+      "buy_and_hold": {
+        "cagr": 14.62,
+        "sharpe": 0.64,
+        "mdd": -35.6,
+        "vol": 26.9,
+        "turnover_per_year": 0.0
+      }
+    },
+    "최종": {
+      "vol_target": {
+        "cagr": 24.08,
+        "sharpe": 1.33,
+        "mdd": -17.5,
+        "vol": 16.2,
+        "turnover_per_year": 4.3
+      },
+      "vol_target_conservative": {
+        "cagr": 20.62,
+        "sharpe": 1.49,
+        "mdd": -13.8,
+        "vol": 12.9,
+        "turnover_per_year": 1.5
+      },
+      "buy_and_hold": {
+        "cagr": 31.53,
+        "sharpe": 1.46,
+        "mdd": -22.9,
+        "vol": 20.2,
+        "turnover_per_year": 0.0
+      }
+    }
+  },
+  "069500": {
+    "탐색": {
+      "vol_target": {
+        "cagr": 3.18,
+        "sharpe": 0.26,
+        "mdd": -29.9,
+        "vol": 15.9,
+        "turnover_per_year": 6.9
+      },
+      "vol_target_conservative": {
+        "cagr": 1.0,
+        "sharpe": 0.15,
+        "mdd": -20.9,
+        "vol": 10.6,
+        "turnover_per_year": 0.9
+      },
+      "buy_and_hold": {
+        "cagr": 3.74,
+        "sharpe": 0.36,
+        "mdd": -22.0,
+        "vol": 12.5,
+        "turnover_per_year": 0.0
+      }
+    },
+    "검증": {
+      "vol_target": {
+        "cagr": -0.27,
+        "sharpe": 0.07,
+        "mdd": -36.2,
+        "vol": 16.6,
+        "turnover_per_year": 4.4
+      },
+      "vol_target_conservative": {
+        "cagr": -0.15,
+        "sharpe": 0.05,
+        "mdd": -28.9,
+        "vol": 13.2,
+        "turnover_per_year": 2.1
+      },
+      "buy_and_hold": {
+        "cagr": 5.03,
+        "sharpe": 0.34,
+        "mdd": -34.6,
+        "vol": 20.6,
+        "turnover_per_year": 0.0
+      }
+    },
+    "최종": {
+      "vol_target": {
+        "cagr": 32.72,
+        "sharpe": 1.58,
+        "mdd": -22.4,
+        "vol": 18.1,
+        "turnover_per_year": 3.5
+      },
+      "vol_target_conservative": {
+        "cagr": 22.44,
+        "sharpe": 1.44,
+        "mdd": -18.9,
+        "vol": 14.3,
+        "turnover_per_year": 2.3
+      },
+      "buy_and_hold": {
+        "cagr": 46.86,
+        "sharpe": 1.27,
+        "mdd": -40.8,
+        "vol": 35.2,
+        "turnover_per_year": 0.0
+      }
+    }
+  },
+  "005930": {
+    "탐색": {
+      "vol_target": {
+        "cagr": 5.85,
+        "sharpe": 0.42,
+        "mdd": -20.9,
+        "vol": 16.6,
+        "turnover_per_year": 2.0
+      },
+      "vol_target_conservative": {
+        "cagr": 6.68,
+        "sharpe": 0.54,
+        "mdd": -18.8,
+        "vol": 13.8,
+        "turnover_per_year": 1.4
+      },
+      "buy_and_hold": {
+        "cagr": 10.12,
+        "sharpe": 0.5,
+        "mdd": -33.2,
+        "vol": 26.1,
+        "turnover_per_year": 0.0
+      }
+    },
+    "검증": {
+      "vol_target": {
+        "cagr": 3.39,
+        "sharpe": 0.28,
+        "mdd": -35.1,
+        "vol": 16.4,
+        "turnover_per_year": 2.3
+      },
+      "vol_target_conservative": {
+        "cagr": 2.25,
+        "sharpe": 0.23,
+        "mdd": -30.4,
+        "vol": 13.7,
+        "turnover_per_year": 1.4
+      },
+      "buy_and_hold": {
+        "cagr": 9.53,
+        "sharpe": 0.48,
+        "mdd": -42.2,
+        "vol": 25.7,
+        "turnover_per_year": 0.0
+      }
+    },
+    "최종": {
+      "vol_target": {
+        "cagr": 28.53,
+        "sharpe": 1.39,
+        "mdd": -24.6,
+        "vol": 18.7,
+        "turnover_per_year": 2.1
+      },
+      "vol_target_conservative": {
+        "cagr": 22.03,
+        "sharpe": 1.38,
+        "mdd": -19.5,
+        "vol": 15.0,
+        "turnover_per_year": 1.0
+      },
+      "buy_and_hold": {
+        "cagr": 54.35,
+        "sharpe": 1.17,
+        "mdd": -43.2,
+        "vol": 46.3,
+        "turnover_per_year": 0.0
+      }
+    }
+  }
+}

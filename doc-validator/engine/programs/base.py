@@ -33,12 +33,20 @@ class ProgramResult:
     confidence: float
     summary: str
     signals: List[Signal] = field(default_factory=list)
+    # 답의 종류. direction은 살 것인가를, sizing은 얼마나 담을 것인가를
+    # 답한다. 방향 예측에는 우위가 확인되지 않았고 비중 조절에는
+    # 확인됐으므로 둘을 같은 필드에 섞지 않는다.
+    kind: str = "direction"
+    # sizing 프로그램만 채운다. 1.0이 기본 비중이다.
+    weight: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "program": self.program,
             "version": self.version,
+            "kind": self.kind,
             "decision": self.decision,
+            "weight": self.weight,
             "confidence": self.confidence,
             "summary": self.summary,
             "signals": [s.to_dict() for s in self.signals],
@@ -72,6 +80,8 @@ class Program(ABC):
     priority: int = 0
     # 보유 가정. 대부분 종가 기준 N거래일이지만 그렇지 않은 것도 있다.
     holding: str = "close_to_close"
+    # 이 프로그램이 답하는 질문의 종류.
+    kind: str = "direction"
 
     @abstractmethod
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:

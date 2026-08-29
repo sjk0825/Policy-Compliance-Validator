@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS judgements (
     normalized_ticker TEXT NOT NULL,
     market            TEXT NOT NULL,
     result            INTEGER NOT NULL,
+    weight            REAL,
     ruleset_version   TEXT NOT NULL,
     created_at        TEXT NOT NULL,
     as_of_date        TEXT NOT NULL,
@@ -101,10 +102,10 @@ class JudgementStore:
             conn.execute(
                 """
                 INSERT INTO judgements (
-                    id, ticker, normalized_ticker, market, result, ruleset_version,
+                    id, ticker, normalized_ticker, market, result, weight, ruleset_version,
                     created_at, as_of_date, duration_ms, commit_hash, commit_short, branch, dirty,
                     response_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     judgement.id,
@@ -112,6 +113,7 @@ class JudgementStore:
                     judgement.normalized_ticker,
                     judgement.market,
                     int(judgement.result),
+                    judgement.weight,
                     judgement.ruleset_version,
                     judgement.created_at.isoformat(),
                     judgement.as_of_date.isoformat(),
@@ -319,6 +321,7 @@ class JudgementStore:
             "normalized_ticker": row["normalized_ticker"],
             "market": row["market"],
             "result": bool(row["result"]),
+            "weight": row["weight"],
             "ruleset_version": row["ruleset_version"],
             "created_at": row["created_at"],
             "as_of_date": row["as_of_date"],

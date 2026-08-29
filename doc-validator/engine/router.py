@@ -29,6 +29,14 @@ ROUTING_PROFILES = {
     # 같은 방향으로 더 밀어붙이고 모멘텀 계열을 눌러둔다.
     "steady_strong": {"low_vol_steady": 2.4, "short_reversal": 2.0,
                       "cross_momentum": 0.6, "trend_following": 0.8},
+    # 비중만 답한다. 방향 프로그램을 모두 눌러 sizing만 남긴다.
+    # 방향 예측에는 우위가 확인되지 않았고 비중 조절에는 낙폭 감소가
+    # 12개 칸 전부에서 확인됐다. 답하는 질문 자체가 다르다.
+    "sizing": {"vol_target": 3.0, "vol_target_conservative": 3.0,
+               "trend_following": 0.0, "mean_reversion": 0.0,
+               "cross_momentum": 0.0, "short_reversal": 0.0,
+               "low_vol_steady": 0.0, "laggard": 0.0,
+               "overnight_reversal": 0.0, "defensive": 0.0},
     # 오버나이트 되돌림을 우대한다. 보유 가정이 다르므로(시가매수→종가매도)
     # 이 프로파일로 낸 판정은 다른 프로파일과 같은 잣대로 채점하면 안 된다.
     "overnight": {"overnight_reversal": 2.0},
@@ -40,9 +48,17 @@ ROUTING_PROFILES = {
     "aggressive": {"cross_momentum": 1.5, "trend_following": 1.3,
                    "low_vol_steady": 0.6},
 }
-# 기본 프로파일. 개발 구간과 구간외 양쪽에서 승률·중앙값이 유일하게
-# 일관되게 가장 높았다(21/63일 모두 승률 50%대, 중앙값 양수).
-DEFAULT_PROFILE = "steady_strong"
+# 기본 프로파일. 방향 프로그램들은 탐색/검증/최종 3분할에서 승률이
+# 48~50.6% 사이를 오갔고 프로파일 간 순위도 유지되지 않았다. 우위가
+# 확인되지 않은 답을 기본으로 낼 이유가 없다.
+#
+# 비중 프로그램은 다르다. 낙폭 감소가 4종목 × 3구간 12개 칸 전부에서
+# 나타났고(무레버리지 기준 평균 -12.1%p), 밴드와 거래비용을 넣은 뒤에도
+# 유지된다. 다만 샤프는 개선이 아니고(7/12) CAGR은 낮아진다. 위험을
+# 줄이는 도구이지 수익을 늘리는 도구가 아니다.
+#
+# 환경변수 ROUTING_PROFILE로 바꿀 수 있다.
+DEFAULT_PROFILE = os.getenv("ROUTING_PROFILE", "sizing")
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 TIMEOUT_SEC = 40
 
@@ -112,9 +128,16 @@ SYSTEM_PROMPT = (
 )
 
 
-def build_prompt(ctx_digest: Dict[str, Any]) -> str:
+def allowed_programs(profile: str) -> List[str]:
+    """프로파일이 죽이지 않은 프로그램만 남긴다."""
+    weights = ROUTING_PROFILES.get(profile, {})
+    return [n for n in programs.REGISTRY if weights.get(n, 1.0) > 0]
+
+
+def build_prompt(ctx_digest: Dict[str, Any], profile: str = DEFAULT_PROFILE) -> str:
     menu = "\n".join(
-        f"- {m['name']} ({m['title']}): {m['when_to_use']}" for m in programs.menu()
+        f"- {m['name']} ({m['title']}): {m['when_to_use']}"
+        for m in programs.menu(allowed_programs(profile))
     )
     return (
         f"[프로그램 목록]\n{menu}\n\n"
@@ -158,10 +181,11 @@ class LLMRouter:
         except Exception as e:
             raise RouterUnavailable(f"{type(e).__name__}: {e}") from e
 
-    def route(self, ctx: Dict[str, Any]) -> RouteDecision:
-        return self.route_digest(digest(ctx))
+    def route(self, ctx: Dict[str, Any], profile: str = DEFAULT_PROFILE) -> RouteDecision:
+        return self.route_digest(digest(ctx), profile)
 
-    def route_digest(self, ctx_digest: Dict[str, Any]) -> RouteDecision:
+    def route_digest(self, ctx_digest: Dict[str, Any],
+                     profile: str = DEFAULT_PROFILE) -> RouteDecision:
         """축약 컨텍스트만으로 라우팅한다.
 
         저장해 둔 입력 fixture를 그대로 태울 수 있어야 프롬프트나 모델을
@@ -175,7 +199,7 @@ class LLMRouter:
             "model": self.model,
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": build_prompt(ctx_digest)},
+                {"role": "user", "content": build_prompt(ctx_digest, profile)},
             ],
             "max_tokens": 200,
             "temperature": 0,
@@ -192,8 +216,10 @@ class LLMRouter:
 
         parsed = _parse_json(text)
         name = (parsed or {}).get("program")
-        if name not in programs.REGISTRY:
-            raise RouterUnavailable(f"모델이 고른 프로그램이 올바르지 않습니다: {name!r}")
+        allowed = allowed_programs(profile)
+        if name not in allowed:
+            raise RouterUnavailable(
+                f"모델이 고른 프로그램이 이 프로파일에 없습니다: {name!r}")
 
         return RouteDecision(
             program=name,
@@ -201,7 +227,7 @@ class LLMRouter:
             source="llm",
             model=data.get("model", self.model),
             latency_ms=latency,
-            candidates=list(programs.REGISTRY),
+            candidates=allowed,
         )
 
 
@@ -280,12 +306,16 @@ def chain_route(ctx: Dict[str, Any], error: Optional[str] = None) -> RouteDecisi
 
 
 def route(ctx: Dict[str, Any], router: Optional[LLMRouter] = None,
-          use_llm: bool = True) -> RouteDecision:
-    """LLM으로 라우팅하고, 안 되면 규칙 기반으로 떨어진다."""
+          use_llm: bool = True, profile: str = DEFAULT_PROFILE) -> RouteDecision:
+    """LLM으로 라우팅하고, 안 되면 규칙 기반으로 떨어진다.
+
+    프로파일은 양쪽에 똑같이 적용된다. LLM에게 프로파일이 죽인 프로그램을
+    보여주면 프로파일이 무력해진다.
+    """
     if not use_llm:
-        return heuristic_route(ctx)
+        return heuristic_route(ctx, profile=profile)
     router = router or LLMRouter()
     try:
-        return router.route(ctx)
+        return router.route(ctx, profile=profile)
     except RouterUnavailable as e:
-        return heuristic_route(ctx, error=str(e))
+        return heuristic_route(ctx, error=str(e), profile=profile)
