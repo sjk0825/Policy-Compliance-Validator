@@ -37,7 +37,8 @@ class OvernightReversal(Program):
     title = "오버나이트 되돌림"
     version = "v1"
     # 다른 프로그램과 보유 가정이 다르다는 것을 이름으로 남긴다.
-    holding = "open_to_close"
+    # 기준일 D의 판단이 D+1 시가매수 → D+1 종가매도로 실행된다.
+    holding = "next_open_to_close"
     # 발동 조건이 좁고(미국이 1% 이상 움직인 한국 거래일) 근거가 별도로
     # 측정돼 있으므로, 적합도가 같으면 이쪽을 택한다.
     priority = 10
@@ -84,11 +85,11 @@ class OvernightReversal(Program):
         if mean is None:
             summary = "직전 미국 거래일을 확인할 수 없다."
         elif decision:
-            summary = f"직전 미국 {mean:+.2f}%. 과매도 갭을 시가에 받는다."
+            summary = f"직전 미국 세션 {mean:+.2f}%. 다음 개장 갭을 받는다."
         elif mean >= RISE_THRESHOLD:
-            summary = f"직전 미국 {mean:+.2f}%. 과매수 갭이라 받지 않는다."
+            summary = f"직전 미국 세션 {mean:+.2f}%. 과매수 갭이라 받지 않는다."
         else:
-            summary = f"직전 미국 {mean:+.2f}%. 움직임이 작아 되돌림을 기대할 수 없다."
+            summary = f"직전 미국 세션 {mean:+.2f}%. 움직임이 작아 되돌림을 기대할 수 없다."
 
         return ProgramResult(
             program=self.name, version=self.version, decision=decision, confidence=conf,

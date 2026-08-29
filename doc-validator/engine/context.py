@@ -287,14 +287,19 @@ def _cross_section(store: PriceStore, symbol: str, as_of: str,
 
 
 def _overnight(store: PriceStore, as_of: str, market: str) -> Dict[str, Any]:
-    """한국 장이 열리기 전에 확정된 미국 직전 거래일 수익률.
+    """기준일 장 마감 뒤에 열린 미국 세션의 수익률.
 
-    미국 종가는 한국 개장 전에 나오므로 미래를 보는 것이 아니다. 다만
-    한국 시장에만 해당한다. 미국 종목에는 같은 날의 자기 자신이 되므로
-    쓸 수 없다.
+    시각을 맞추는 것이 전부다. 미국은 한국 시각 새벽에 닫는다. 기준일 D의
+    미국 종가는 D의 한국 장중에는 알 수 없고, D+1 개장 전에는 알 수 있다.
 
-    이 값은 시가 매수를 전제로 한 신호다. 갭은 이미 지나간 뒤이고,
-    측정 결과 갭이 과잉 반응해 장중에 되돌린다.
+        D 한국 마감  →  D 미국 마감(새벽)  →  D+1 한국 개장
+
+    그래서 이 값이 쓰이는 거래는 D가 아니라 D+1이다. D+1 시가에 사서
+    D+1 종가에 판다. 컨텍스트의 나머지 지표는 D 종가까지만 쓰므로 D+1
+    개장 시점에 전부 알려져 있다. 미래를 보지 않는다.
+
+    갭은 이 정보를 이미 반영한 뒤다. 측정 결과 그 갭이 과잉 반응해서
+    장중에 일부 되돌린다.
     """
     if market != "kr":
         return {"applicable": False, "reason": "한국 시장에만 적용된다."}
@@ -303,12 +308,13 @@ def _overnight(store: PriceStore, as_of: str, market: str) -> Dict[str, Any]:
     for sym in OVERNIGHT_LEADERS:
         if not store.has(sym):
             continue
-        # as_of "이전"이어야 한다. 같은 날 미국 종가는 한국 장 마감 뒤에 나온다.
-        bars = [b for b in store.bars(sym, as_of, 5)]
-        prior = [b for b in bars if b.date < as_of]
-        if len(prior) < 2:
+        # as_of "이하"다. as_of 당일 미국 종가는 as_of 한국 장이 닫힌 뒤에
+        # 나오지만, 이 신호가 쓰이는 다음 한국 개장 전에는 확정돼 있다.
+        bars = store.bars(sym, as_of, 5)
+        if len(bars) < 2:
             continue
-        out["leaders"][sym] = round((prior[-1].close / prior[-2].close - 1) * 100, 4)
+        out["leaders"][sym] = round((bars[-1].close / bars[-2].close - 1) * 100, 4)
+        out.setdefault("us_session_date", bars[-1].date)
 
     vals = list(out["leaders"].values())
     out["mean_pct"] = round(sum(vals) / len(vals), 4) if vals else None
