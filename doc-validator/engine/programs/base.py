@@ -66,6 +66,12 @@ class Program(ABC):
     version: str = "v1"
     # 라우터에게 보여줄 설명. 이 문장이 라우팅 품질을 좌우한다.
     when_to_use: str = ""
+    # 적합도가 같을 때의 우선순위. 높을수록 먼저다.
+    # 이것이 없으면 동점 시 등록 순서가 결과를 정한다. 우선순위 체인을
+    # 없앴는데 동점 처리에 순서 의존이 남아 있으면 같은 문제가 반복된다.
+    priority: int = 0
+    # 보유 가정. 대부분 종가 기준 N거래일이지만 그렇지 않은 것도 있다.
+    holding: str = "close_to_close"
 
     @abstractmethod
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:

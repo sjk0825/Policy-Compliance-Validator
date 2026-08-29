@@ -11,6 +11,8 @@ doc-validator/data/*.db
 doc-validator/fixtures/data/
 # 확장 유니버스(718종목, 146MB). manifest만 커밋한다.
 doc-validator/fixtures/wide/**/*.csv
+# 선행지수 원자료. manifest만 커밋한다.
+doc-validator/fixtures/leaders/*.csv
 # 슬라이스 CSV도 seed로 복원 가능하다. slice.json만 커밋한다.
 doc-validator/fixtures/slices/**/*.csv
 

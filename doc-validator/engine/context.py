@@ -29,6 +29,12 @@ REGIME_ASSETS = [
     ("069500", "한국 대형주"),
 ]
 
+# 밤사이 정보를 만드는 시장. 한국이 닫힌 뒤에 닫는 곳만 해당한다.
+# 일본·중국·홍콩은 같은 시간대라 전일 종가에 새 정보가 없고, 실제로
+# 측정해도 효과가 나오지 않는다(기준 대비 ±1p 이내).
+# 유럽도 한국 마감 후 닫지만 효과가 없다. 미국만 듣는다.
+OVERNIGHT_LEADERS = ["SPY", "QQQ"]
+
 RETURN_WINDOWS = [1, 5, 20, 60, 120, 252]
 MAX_LOOKBACK = 400
 
@@ -68,6 +74,7 @@ class MarketContext:
     drawdown: Optional[Dict[str, Any]]
     volume: Dict[str, Optional[float]]
     cross_section: Dict[str, Any]
+    overnight: Dict[str, Any]
     regime: Dict[str, Any]
     coverage: Dict[str, Any]
     warnings: List[str] = field(default_factory=list)
@@ -85,6 +92,7 @@ class MarketContext:
             "drawdown": self.drawdown,
             "volume": self.volume,
             "cross_section": self.cross_section,
+            "overnight": self.overnight,
             "regime": self.regime,
             "warnings": self.warnings,
         }
@@ -278,6 +286,35 @@ def _cross_section(store: PriceStore, symbol: str, as_of: str,
     }
 
 
+def _overnight(store: PriceStore, as_of: str, market: str) -> Dict[str, Any]:
+    """한국 장이 열리기 전에 확정된 미국 직전 거래일 수익률.
+
+    미국 종가는 한국 개장 전에 나오므로 미래를 보는 것이 아니다. 다만
+    한국 시장에만 해당한다. 미국 종목에는 같은 날의 자기 자신이 되므로
+    쓸 수 없다.
+
+    이 값은 시가 매수를 전제로 한 신호다. 갭은 이미 지나간 뒤이고,
+    측정 결과 갭이 과잉 반응해 장중에 되돌린다.
+    """
+    if market != "kr":
+        return {"applicable": False, "reason": "한국 시장에만 적용된다."}
+
+    out: Dict[str, Any] = {"applicable": True, "leaders": {}}
+    for sym in OVERNIGHT_LEADERS:
+        if not store.has(sym):
+            continue
+        # as_of "이전"이어야 한다. 같은 날 미국 종가는 한국 장 마감 뒤에 나온다.
+        bars = [b for b in store.bars(sym, as_of, 5)]
+        prior = [b for b in bars if b.date < as_of]
+        if len(prior) < 2:
+            continue
+        out["leaders"][sym] = round((prior[-1].close / prior[-2].close - 1) * 100, 4)
+
+    vals = list(out["leaders"].values())
+    out["mean_pct"] = round(sum(vals) / len(vals), 4) if vals else None
+    return out
+
+
 def build(store: PriceStore, symbol: str, as_of: str) -> MarketContext:
     """symbol에 대해 as_of 시점의 컨텍스트를 만든다."""
     meta = store.meta(symbol)
@@ -332,6 +369,7 @@ def build(store: PriceStore, symbol: str, as_of: str) -> MarketContext:
             "rel_vol_20_over_60_pct": F.relative_volume(volumes, 20, 60),
         },
         cross_section=_cross_section(store, symbol, as_of, meta.market),
+        overnight=_overnight(store, as_of, meta.market),
         regime=regime,
         warnings=warnings,
     )

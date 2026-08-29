@@ -29,6 +29,9 @@ ROUTING_PROFILES = {
     # 같은 방향으로 더 밀어붙이고 모멘텀 계열을 눌러둔다.
     "steady_strong": {"low_vol_steady": 2.4, "short_reversal": 2.0,
                       "cross_momentum": 0.6, "trend_following": 0.8},
+    # 오버나이트 되돌림을 우대한다. 보유 가정이 다르므로(시가매수→종가매도)
+    # 이 프로파일로 낸 판정은 다른 프로파일과 같은 잣대로 채점하면 안 된다.
+    "overnight": {"overnight_reversal": 2.0},
     # 승률을 최우선으로 둔다. 십분위 측정에서 모멘텀 하위권이 중앙값을
     # 넘길 확률이 높았으므로 소외주 계열을 앞세운다.
     "win_rate": {"laggard": 2.6, "low_vol_steady": 2.0, "short_reversal": 1.6,
@@ -233,8 +236,12 @@ def heuristic_route(ctx: Dict[str, Any], error: Optional[str] = None,
     weights = ROUTING_PROFILES.get(profile, {})
     scores = {name: round(p.fitness(ctx) * weights.get(name, 1.0), 4)
               for name, p in programs.REGISTRY.items()}
-    # 동점이면 이름 순이 아니라 방어가 이기도록 기본값을 뒤로 둔다.
-    best = max(scores, key=lambda n: (scores[n], n == programs.DEFAULT_PROGRAM))
+    # 동점 처리를 명시한다. 등록 순서에 맡기면 순서가 결과를 정한다.
+    # 적합도 → 선언된 우선순위 → 이름 순으로 결정론적으로 고른다.
+    best = max(scores, key=lambda n: (scores[n],
+                                      programs.REGISTRY[n].priority,
+                                      n == programs.DEFAULT_PROGRAM,
+                                      n))
 
     ranked = sorted(scores.items(), key=lambda kv: -kv[1])
     gap = round(ranked[0][1] - ranked[1][1], 4) if len(ranked) > 1 else None

@@ -1,0 +1,112 @@
+{
+  "leaders": [
+    {
+      "symbol": "US500",
+      "label": "S&P500",
+      "file": "fixtures/leaders/US500.csv",
+      "rows": 4189,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "IXIC",
+      "label": "나스닥",
+      "file": "fixtures/leaders/IXIC.csv",
+      "rows": 4189,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "DJI",
+      "label": "다우",
+      "file": "fixtures/leaders/DJI.csv",
+      "rows": 4189,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "VIX",
+      "label": "VIX",
+      "file": "fixtures/leaders/VIX.csv",
+      "rows": 4190,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "N225",
+      "label": "닛케이225",
+      "file": "fixtures/leaders/N225.csv",
+      "rows": 4072,
+      "first": "2010-01-04",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "SSEC",
+      "label": "상해종합",
+      "file": "fixtures/leaders/SSEC.csv",
+      "rows": 4041,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "HSI",
+      "label": "항셍",
+      "file": "fixtures/leaders/HSI.csv",
+      "rows": 4099,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "DAX",
+      "label": "독일DAX",
+      "file": "fixtures/leaders/DAX.csv",
+      "rows": 2978,
+      "first": "2014-10-23",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "FTSE",
+      "label": "영국FTSE",
+      "file": "fixtures/leaders/FTSE.csv",
+      "rows": 4206,
+      "first": "2009-12-31",
+      "last": "2026-08-27",
+      "has_open": true
+    },
+    {
+      "symbol": "USD/KRW",
+      "label": "원달러",
+      "file": "fixtures/leaders/USD-KRW.csv",
+      "rows": 4337,
+      "first": "2009-12-31",
+      "last": "2026-08-29",
+      "has_open": true
+    },
+    {
+      "symbol": "KS11",
+      "label": "코스피",
+      "file": "fixtures/leaders/KS11.csv",
+      "rows": 4100,
+      "first": "2010-01-04",
+      "last": "2026-08-28",
+      "has_open": true
+    },
+    {
+      "symbol": "KQ11",
+      "label": "코스닥",
+      "file": "fixtures/leaders/KQ11.csv",
+      "rows": 4100,
+      "first": "2010-01-04",
+      "last": "2026-08-28",
+      "has_open": true
+    }
+  ]
+}

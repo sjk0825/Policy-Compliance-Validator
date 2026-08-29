@@ -9,6 +9,7 @@ from .base import Program, ProgramResult, Signal
 from .cross_momentum import CrossMomentum
 from .defensive import Defensive
 from .laggard import Laggard
+from .overnight_reversal import OvernightReversal
 from .low_vol_steady import LowVolSteady
 from .short_reversal import ShortReversal
 from .mean_reversion import MeanReversion
@@ -16,7 +17,8 @@ from .trend_following import TrendFollowing
 
 REGISTRY: Dict[str, Program] = {
     p.name: p for p in (TrendFollowing(), MeanReversion(), CrossMomentum(),
-                        ShortReversal(), LowVolSteady(), Laggard(), Defensive())
+                        ShortReversal(), LowVolSteady(), Laggard(),
+                        OvernightReversal(), Defensive())
 }
 
 # 라우터가 못 고르거나 LLM을 못 쓸 때의 최종 안전판.
