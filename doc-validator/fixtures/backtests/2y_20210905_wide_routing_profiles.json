@@ -1,0 +1,82 @@
+{
+  "balanced": {
+    "21": {
+      "n": 39584,
+      "win_rate": 49.11,
+      "median": -0.12,
+      "mean": 0.332,
+      "skew": 2.081,
+      "win_loss": 1.15,
+      "true_pct": 54.5
+    },
+    "63": {
+      "n": 39584,
+      "win_rate": 49.2,
+      "median": -0.203,
+      "mean": 1.215,
+      "skew": 4.025,
+      "win_loss": 1.291,
+      "true_pct": 54.5
+    }
+  },
+  "steady": {
+    "21": {
+      "n": 29423,
+      "win_rate": 49.2,
+      "median": -0.105,
+      "mean": 0.336,
+      "skew": 2.143,
+      "win_loss": 1.148,
+      "true_pct": 40.5
+    },
+    "63": {
+      "n": 29423,
+      "win_rate": 49.54,
+      "median": -0.109,
+      "mean": 1.25,
+      "skew": 3.669,
+      "win_loss": 1.285,
+      "true_pct": 40.5
+    }
+  },
+  "steady_strong": {
+    "21": {
+      "n": 19944,
+      "win_rate": 50.85,
+      "median": 0.119,
+      "mean": 0.345,
+      "skew": 1.133,
+      "win_loss": 1.086,
+      "true_pct": 27.5
+    },
+    "63": {
+      "n": 19944,
+      "win_rate": 50.57,
+      "median": 0.117,
+      "mean": 0.874,
+      "skew": 5.158,
+      "win_loss": 1.169,
+      "true_pct": 27.5
+    }
+  },
+  "aggressive": {
+    "21": {
+      "n": 37122,
+      "win_rate": 49.48,
+      "median": -0.06,
+      "mean": 0.336,
+      "skew": 2.082,
+      "win_loss": 1.135,
+      "true_pct": 51.1
+    },
+    "63": {
+      "n": 37122,
+      "win_rate": 49.28,
+      "median": -0.18,
+      "mean": 1.203,
+      "skew": 4.206,
+      "win_loss": 1.284,
+      "true_pct": 51.1
+    }
+  }
+}

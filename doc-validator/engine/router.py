@@ -17,6 +17,25 @@ from typing import Any, Dict, List, Optional
 from . import programs
 
 DEFAULT_MODEL = "minimax/minimax-m3:free"
+
+# 라우팅 선호. 적합도에 곱하는 가중치다.
+# 어느 프로그램을 더 자주 태울지는 "무엇이 맞는가"가 아니라 "무엇을
+# 원하는가"의 문제라, 코드에 하나로 박지 않고 프로파일로 갈라둔다.
+ROUTING_PROFILES = {
+    # 적합도 그대로. 가중치 없음.
+    "balanced": {},
+    # 고승률·저왜도 계열을 우대한다. 자주 이기는 대신 기대수익이 낮다.
+    "steady": {"low_vol_steady": 1.6, "short_reversal": 1.4},
+    # 같은 방향으로 더 밀어붙이고 모멘텀 계열을 눌러둔다.
+    "steady_strong": {"low_vol_steady": 2.4, "short_reversal": 2.0,
+                      "cross_momentum": 0.6, "trend_following": 0.8},
+    # 반대쪽. 드물게 크게 이기는 계열을 우대한다.
+    "aggressive": {"cross_momentum": 1.5, "trend_following": 1.3,
+                   "low_vol_steady": 0.6},
+}
+# 기본 프로파일. 개발 구간과 구간외 양쪽에서 승률·중앙값이 유일하게
+# 일관되게 가장 높았다(21/63일 모두 승률 50%대, 중앙값 양수).
+DEFAULT_PROFILE = "steady_strong"
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 TIMEOUT_SEC = 40
 
@@ -195,7 +214,8 @@ def _parse_json(text: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def heuristic_route(ctx: Dict[str, Any], error: Optional[str] = None) -> RouteDecision:
+def heuristic_route(ctx: Dict[str, Any], error: Optional[str] = None,
+                    profile: str = DEFAULT_PROFILE) -> RouteDecision:
     """규칙 기반 라우터. 적합도가 가장 높은 프로그램을 고른다.
 
     우선순위 체인(if/elif)을 쓰지 않는다. 체인은 먼저 걸리는 조건이 이기므로
@@ -206,13 +226,15 @@ def heuristic_route(ctx: Dict[str, Any], error: Optional[str] = None) -> RouteDe
     defensive는 고정 바닥값을 낸다. 전문 프로그램이 그 값을 넘지 못하면,
     즉 어느 쪽도 자기 국면이라고 말하지 못하면 방어가 이긴다.
     """
-    scores = {name: round(p.fitness(ctx), 4) for name, p in programs.REGISTRY.items()}
+    weights = ROUTING_PROFILES.get(profile, {})
+    scores = {name: round(p.fitness(ctx) * weights.get(name, 1.0), 4)
+              for name, p in programs.REGISTRY.items()}
     # 동점이면 이름 순이 아니라 방어가 이기도록 기본값을 뒤로 둔다.
     best = max(scores, key=lambda n: (scores[n], n == programs.DEFAULT_PROGRAM))
 
     ranked = sorted(scores.items(), key=lambda kv: -kv[1])
     gap = round(ranked[0][1] - ranked[1][1], 4) if len(ranked) > 1 else None
-    reason = "적합도 " + ", ".join(f"{n} {v:.2f}" for n, v in ranked)
+    reason = f"[{profile}] 적합도 " + ", ".join(f"{n} {v:.2f}" for n, v in ranked[:3])
 
     return RouteDecision(
         program=best, reason=reason,

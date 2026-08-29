@@ -1,91 +1,87 @@
-"""단기 반전. 자주 이기는 대신 가끔 크게 잃는 쪽을 택한다.
+"""단기 반전 v2. 조용한 종목이 잠깐 밀렸을 때만 잡는다.
 
-기존 cross_momentum은 반대 성질이었다. 승률 49.3%에 중앙값 -0.13%,
-평균만 +1.59%. 자주 조금 지고 가끔 크게 이기는 형태다. 여기서는 그
-반대를 노린다.
+v1은 실패했다. 21일 승률 45.1%, 중앙값 -0.86%로 전 프로그램 중 최악이었다.
+원인은 전제에 있었다. v1은 "장기 추세가 살아 있을 것"을 요구했는데,
+그러면 모멘텀 상위 종목 중 잠깐 밀린 것을 고르게 된다. 모멘텀이 이기는
+표본에서 그 종목의 하락에 반대로 걸었으니 정면충돌이었다.
 
-논리는 이렇다. 추세가 살아 있는 종목이 단기적으로만 밀렸다면 그 하락은
-대체로 되돌아온다. 되돌림은 자주 일어나지만 폭이 작고, 되돌아오지 않을
-때는 추세가 실제로 꺾인 경우라 손실이 크다. 승률은 높고 왜도는 음수다.
+v2는 추세 조건을 버리고 성격 조건으로 바꾼다. 되돌아오는 것은 추세가
+있는 종목이 아니라 원래 조용한 종목이다. 변동성이 큰 종목이 밀린 것은
+되돌림이 아니라 무언가 벌어지고 있는 것이다.
 
-이 성질은 공짜가 아니다. 자주 이기는 대가로 드물게 크게 잃는다.
-프로파일을 고른 것이지 우위를 만든 것이 아니다.
+  조용한 종목이 밀렸다  →  대개 되돌아온다   (자주 이김, 폭 작음)
+  시끄러운 종목이 밀렸다 →  계속 밀린다      (v1이 여기 걸렸다)
 
-핵심 조건은 셋이다.
-1. 장기 추세가 살아 있을 것        — 떨어지는 칼을 잡지 않는다
-2. 단기적으로만 밀렸을 것          — 되돌릴 여지
-3. 변동성이 폭발하지 않았을 것      — 구조적 붕괴 배제
+승률을 얻는 대신 드물게 크게 잃는다. 조용하던 종목이 조용하지 않게 되는
+순간이 그때다. 이 프로파일은 선택이지 우위가 아니다.
 """
 from typing import Any, Dict
 
 from .base import Program, ProgramResult, Signal, ramp
 
-# 단기 수익률 하위 몇 %를 과매도로 볼 것인가.
-OVERSOLD_BELOW = 0.35
-# 장기 모멘텀이 이 아래면 추세가 죽은 것으로 본다.
-TREND_ALIVE_ABOVE = 0.45
-# 변동성이 이 위로 튀면 되돌림이 아니라 붕괴로 본다.
-VOL_PANIC_ABOVE = 0.85
+# 단기 수익률 하위 몇 %를 과매도로 볼 것인가. v1(0.35)보다 좁힌다.
+OVERSOLD_BELOW = 0.20
+# 이 종목이 원래 조용한가. 변동성 백분위 상한.
+CALM_BELOW = 0.50
+# 구조적 붕괴 배제. 낙폭 백분위가 이 아래면 이미 무너진 종목이다.
+NOT_BROKEN_ABOVE = 0.35
 MIN_PEERS = 20
 
 
 class ShortReversal(Program):
     name = "short_reversal"
     title = "단기 반전"
-    version = "v1"
+    version = "v2"
     when_to_use = (
-        "장기 추세는 살아 있는데 최근 5~20일만 동료 대비 밀린 종목일 때. "
-        "되돌림에 건다. 추세가 이미 꺾였거나 변동성이 폭발한 종목에는 쓰지 않는다. "
-        "승률은 높지만 틀릴 때 손실이 크다."
+        "평소 변동성이 낮은 종목이 최근 5~20일에만 동료 대비 크게 밀렸을 때. "
+        "성격이 조용한 종목의 일시적 하락은 되돌아오는 경향이 있다. "
+        "변동성이 원래 큰 종목이나 이미 깊이 무너진 종목에는 쓰지 않는다. "
+        "추세 방향은 보지 않는다."
     )
 
     def fitness(self, ctx: Dict[str, Any]) -> float:
         cs = ctx.get("cross_section") or {}
-        styles = cs.get("styles") or {}
-        mom, rev, stab = styles.get("momentum"), styles.get("reversal"), styles.get("stability")
-        if None in (mom, rev, stab) or cs.get("peer_count", 0) < MIN_PEERS:
+        pct = cs.get("percentile") or {}
+        rev = (cs.get("styles") or {}).get("reversal")
+        vol, dd = pct.get("vol_20d"), pct.get("drawdown")
+        if None in (rev, vol, dd) or cs.get("peer_count", 0) < MIN_PEERS:
             return 0.0
-        # 모멘텀은 높고 단기는 낮을수록, 그리고 변동성이 낮을수록 이 프로그램의 판이다.
         return self.mean_fit([
-            ramp(mom, TREND_ALIVE_ABOVE, 0.80),
-            ramp(rev, OVERSOLD_BELOW + 0.15, 0.05),
-            ramp(stab, VOL_PANIC_ABOVE, 0.40),
+            ramp(rev, OVERSOLD_BELOW + 0.15, 0.02),   # 깊게 밀릴수록
+            ramp(vol, CALM_BELOW + 0.15, 0.10),       # 조용할수록
+            ramp(dd, NOT_BROKEN_ABOVE, 0.70),         # 덜 무너졌을수록
         ])
 
     def run(self, ctx: Dict[str, Any]) -> ProgramResult:
         cs = ctx.get("cross_section") or {}
         pct = cs.get("percentile") or {}
-        styles = cs.get("styles") or {}
-        mom, rev, stab = styles.get("momentum"), styles.get("reversal"), styles.get("stability")
+        rev = (cs.get("styles") or {}).get("reversal")
 
         s = [
-            Signal("장기 추세 유지",
-                   None if mom is None else mom >= TREND_ALIVE_ABOVE,
-                   f"모멘텀 백분위 {mom:.2f}" if mom is not None else "-", mom),
             Signal("단기 과매도",
                    None if rev is None else rev <= OVERSOLD_BELOW,
                    f"반전 백분위 {rev:.2f}" if rev is not None else "-", rev),
-            Signal("변동성 미폭발",
-                   None if stab is None else stab <= VOL_PANIC_ABOVE,
-                   f"안정성 백분위 {stab:.2f}" if stab is not None else "-", stab),
-            Signal("낙폭 과대 아님",
-                   None if pct.get("drawdown") is None else pct["drawdown"] >= 0.25,
+            Signal("평소 조용한 종목",
+                   None if pct.get("vol_20d") is None else pct["vol_20d"] <= CALM_BELOW,
+                   f"변동성 백분위 {pct['vol_20d']:.2f}" if pct.get("vol_20d") is not None else "-",
+                   pct.get("vol_20d")),
+            Signal("구조적 붕괴 아님",
+                   None if pct.get("drawdown") is None else pct["drawdown"] >= NOT_BROKEN_ABOVE,
                    f"낙폭 백분위 {pct['drawdown']:.2f}" if pct.get("drawdown") is not None else "-",
                    pct.get("drawdown")),
+            Signal("변동성 급확대 아님",
+                   None if pct.get("vol_ratio") is None else pct["vol_ratio"] <= 0.80,
+                   f"변동성비 백분위 {pct['vol_ratio']:.2f}" if pct.get("vol_ratio") is not None else "-",
+                   pct.get("vol_ratio")),
         ]
-        # 세 핵심 조건은 모두 충족해야 한다. 하나라도 어긋나면 되돌림이 아니다.
-        core = s[:3]
-        judged = [x for x in core if x.passed is not None]
-        decision = bool(judged) and all(x.passed for x in judged) and len(judged) == 3
-        if decision and s[3].passed is False:
-            decision = False
-
-        all_judged = [x for x in s if x.passed is not None]
-        conf = round(sum(1 for x in all_judged if x.passed) / len(all_judged), 3) if all_judged else 0.0
+        judged = [x for x in s if x.passed is not None]
+        # 되돌림은 조건이 다 맞을 때만 성립한다. 하나라도 어긋나면 잡지 않는다.
+        decision = len(judged) >= 3 and all(x.passed for x in judged)
+        conf = round(sum(1 for x in judged if x.passed) / len(judged), 3) if judged else 0.0
 
         return ProgramResult(
             program=self.name, version=self.version, decision=decision, confidence=conf,
-            summary=("추세는 살아 있고 단기만 밀려 되돌림에 건다" if decision
+            summary=("조용하던 종목이 잠깐 밀려 되돌림에 건다" if decision
                      else "되돌림 조건이 갖춰지지 않았다"),
             signals=s,
         )
