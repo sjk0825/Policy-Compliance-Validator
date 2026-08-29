@@ -42,6 +42,10 @@ CROSS_AXES = {
     "reversal": ["ret_5d", "ret_20d", "px_vs_sma20"],
     # 안정성. 변동성과 낙폭.
     "stability": ["vol_20d", "vol_ratio", "drawdown"],
+    # 일관성. 크기가 아니라 빈도를 잰다.
+    # 기존 축은 전부 "얼마나 올랐나"인데 우리가 원하는 것은 "얼마나 자주
+    # 이기나"다. 다른 물건이므로 따로 잰다.
+    "consistency": ["up_day_ratio_60", "rel_win_60", "jump_max_60", "down_up_vol"],
 }
 MOMENTUM_AXES = CROSS_AXES["momentum"]
 ALL_AXES = [a for axes in CROSS_AXES.values() for a in axes]
@@ -150,7 +154,74 @@ def _axis_values(store: PriceStore, symbol: str, as_of: str) -> Dict[str, Option
         "vol_20d": v20,
         "vol_ratio": round(v20 / v60, 4) if v20 and v60 else None,
         "drawdown": dd.get("pct"),
+        **_consistency(closes),
+        # rel_win_60은 동료와 비교해야 하므로 _peer_axes에서 채운다.
+        "rel_win_60": None,
     }
+
+
+def _consistency(closes: List[float], window: int = 60) -> Dict[str, Optional[float]]:
+    """빈도와 꼬리를 재는 지표들.
+
+    up_day_ratio_60  상승 마감한 날의 비율. 크기와 무관하다.
+    jump_max_60      최근 최대 일간 변동폭. 크면 예상 못한 사건이 잦다는 뜻이다.
+    down_up_vol      하락일 변동성 / 상승일 변동성. 1보다 크면 내릴 때 더 급하다.
+    """
+    if len(closes) < window + 1:
+        return {"up_day_ratio_60": None, "jump_max_60": None, "down_up_vol": None}
+
+    rets = [closes[i] / closes[i - 1] - 1
+            for i in range(len(closes) - window, len(closes))
+            if closes[i - 1]]
+    if len(rets) < window // 2:
+        return {"up_day_ratio_60": None, "jump_max_60": None, "down_up_vol": None}
+
+    ups = [r for r in rets if r > 0]
+    downs = [r for r in rets if r < 0]
+
+    def rms(xs):
+        return (sum(x * x for x in xs) / len(xs)) ** 0.5 if xs else None
+
+    ru, rdn = rms(ups), rms(downs)
+    return {
+        "up_day_ratio_60": round(len(ups) / len(rets), 4),
+        "jump_max_60": round(max(abs(r) for r in rets) * 100, 4),
+        "down_up_vol": round(rdn / ru, 4) if ru and rdn else None,
+    }
+
+
+def _daily_returns(store: PriceStore, symbol: str, as_of: str,
+                   window: int = 60) -> Optional[List[float]]:
+    closes = store.closes(symbol, as_of, window + 1)
+    if len(closes) < window + 1:
+        return None
+    return [closes[i] / closes[i - 1] - 1 for i in range(1, len(closes)) if closes[i - 1]]
+
+
+def _fill_rel_win(store: PriceStore, as_of: str,
+                  axes: Dict[str, Dict[str, Optional[float]]], peers: List[str],
+                  window: int = 60) -> None:
+    """최근 window일 중 동료 중앙값을 이긴 날의 비율.
+
+    이것이 승률을 직접 겨냥하는 유일한 지표다. 나머지는 전부 크기를 잰다.
+    과거에 자주 이긴 종목이 앞으로도 자주 이기는지가 검증 대상이다.
+    """
+    series = {s: _daily_returns(store, s, as_of, window) for s in peers}
+    usable = {s: r for s, r in series.items() if r and len(r) == window}
+    if len(usable) < 10:
+        return
+
+    for i in range(window):
+        day = sorted(r[i] for r in usable.values())
+        n = len(day)
+        med = day[n // 2] if n % 2 else (day[n // 2 - 1] + day[n // 2]) / 2
+        for s, r in usable.items():
+            axes[s].setdefault("_wins", 0)
+            if r[i] > med:
+                axes[s]["_wins"] += 1
+
+    for s in usable:
+        axes[s]["rel_win_60"] = round(axes[s].pop("_wins", 0) / window, 4)
 
 
 def _peer_axes(store: PriceStore, market: str, as_of: str) -> Dict[str, Dict]:
@@ -160,6 +231,7 @@ def _peer_axes(store: PriceStore, market: str, as_of: str) -> Dict[str, Dict]:
 
     peers = [s for s in store.symbols if store.meta(s).market == market]
     out = {s: _axis_values(store, s, as_of) for s in peers}
+    _fill_rel_win(store, as_of, out, peers)
 
     if len(_PEER_CACHE) >= _PEER_CACHE_MAX:
         _PEER_CACHE.clear()

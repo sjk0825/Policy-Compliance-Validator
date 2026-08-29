@@ -29,6 +29,10 @@ ROUTING_PROFILES = {
     # 같은 방향으로 더 밀어붙이고 모멘텀 계열을 눌러둔다.
     "steady_strong": {"low_vol_steady": 2.4, "short_reversal": 2.0,
                       "cross_momentum": 0.6, "trend_following": 0.8},
+    # 승률을 최우선으로 둔다. 십분위 측정에서 모멘텀 하위권이 중앙값을
+    # 넘길 확률이 높았으므로 소외주 계열을 앞세운다.
+    "win_rate": {"laggard": 2.6, "low_vol_steady": 2.0, "short_reversal": 1.6,
+                 "cross_momentum": 0.4, "trend_following": 0.5},
     # 반대쪽. 드물게 크게 이기는 계열을 우대한다.
     "aggressive": {"cross_momentum": 1.5, "trend_following": 1.3,
                    "low_vol_steady": 0.6},
