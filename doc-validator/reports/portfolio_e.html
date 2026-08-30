@@ -1,0 +1,563 @@
+<title>포트폴리오 E</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #F5F6F8;
+  --surface:     #FFFFFF;
+  --surface-alt: #EDEFF3;
+  --ink:         #171A21;
+  --ink-soft:    #3D4450;
+  --muted:       #6C7484;
+  --line:        #DCE0E7;
+  --line-soft:   #E8EBEF;
+  --accent:      #1D5B63;
+  --accent-soft: #E2EDEE;
+  --pos:         #1B6B4F;
+  --neg:         #A24238;
+  --flag:        #8A6118;
+
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --sans:  "IBM Plex Sans", "Pretendard", -apple-system, "Malgun Gothic", sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --measure: 34rem;
+  --wide: 60rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #11141A;
+    --surface:     #181C23;
+    --surface-alt: #21262F;
+    --ink:         #E7EAEF;
+    --ink-soft:    #BFC5D0;
+    --muted:       #8A92A2;
+    --line:        #2C323C;
+    --line-soft:   #232830;
+    --accent:      #58A8B2;
+    --accent-soft: #1B3238;
+    --pos:         #4FB088;
+    --neg:         #D4796C;
+    --flag:        #C2933F;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #11141A;
+  --surface:     #181C23;
+  --surface-alt: #21262F;
+  --ink:         #E7EAEF;
+  --ink-soft:    #BFC5D0;
+  --muted:       #8A92A2;
+  --line:        #2C323C;
+  --line-soft:   #232830;
+  --accent:      #58A8B2;
+  --accent-soft: #1B3238;
+  --pos:         #4FB088;
+  --neg:         #D4796C;
+  --flag:        #C2933F;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+/* ---- 머리말 ---- */
+.masthead { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.standfirst {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+}
+
+/* ---- 섹션 ---- */
+section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.sec-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+  margin: 0;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+p { margin: 0; max-width: var(--measure); }
+p + p { margin-top: 0.85rem; }
+.prose { display: flex; flex-direction: column; gap: 0.85rem; }
+.wide-prose { max-width: 46rem; }
+
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+/* ---- 표 ---- */
+.tw {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+
+th, td {
+  padding: 0.6rem 0.9rem;
+  text-align: right;
+  border-bottom: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+
+th:first-child, td:first-child { text-align: left; }
+
+thead th {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--line);
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.rule-top td { border-top: 1px solid var(--line); }
+
+.num { font-family: var(--mono); }
+.tick { font-family: var(--mono); font-weight: 500; }
+.pos { color: var(--pos); }
+.neg { color: var(--neg); }
+.dim { color: var(--muted); }
+
+tr.pick td {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+tr.pick td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+
+.bar-cell { width: 32%; min-width: 90px; }
+.bar {
+  display: block;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 1px;
+  opacity: 0.75;
+}
+
+/* ---- 지표 카드 ---- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat { background: var(--surface); padding: 1.1rem 1.15rem; }
+
+.stat .k {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.stat .v {
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat .n {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  white-space: nowrap;
+}
+
+/* ---- 근거 목록 ---- */
+.reasons { display: flex; flex-direction: column; gap: 0; }
+
+.reason {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 1.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: baseline;
+}
+.reason:first-child { border-top: 1px solid var(--line); }
+
+.reason .tk {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--accent);
+}
+
+.reason .body { max-width: 40rem; }
+.reason .body .role {
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+.reason .body .why { font-size: 0.88rem; color: var(--ink-soft); }
+
+/* ---- 기각 항목 ---- */
+.rejected {
+  border-left: 2px solid var(--flag);
+  padding: 0.15rem 0 0.15rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.rejected .tag {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--flag);
+}
+
+/* ---- 검증 로그 ---- */
+.log { display: flex; flex-direction: column; gap: 0; }
+
+.log-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: baseline;
+}
+.log-row:first-child { border-top: 1px solid var(--line); }
+
+.log-row .what { font-size: 0.9rem; }
+.log-row .what small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
+}
+
+.verdict {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.verdict.no { color: var(--neg); border-color: var(--neg); opacity: 0.9; }
+.verdict.yes { color: var(--pos); border-color: var(--pos); }
+
+/* ---- 주의 ---- */
+.caveats {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.caveats ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.caveats li { font-size: 0.9rem; color: var(--ink-soft); }
+
+footer {
+  border-top: 1px solid var(--line);
+  padding-top: 1.2rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+@media (max-width: 560px) {
+  .page { padding: 3rem 1.1rem 4rem; gap: 3rem; }
+  .reason { grid-template-columns: 1fr; gap: 0.3rem; }
+}
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Portfolio Decision · 2026-08-30</p>
+    <h1>포트폴리오 E</h1>
+    <p class="standfirst">자산군 7종에 구조적 헤지 3종을 더하고, 21거래일마다 되맞춘다. 수익을 6%p 내주고 최악의 해를 절반으로 줄이는 거래다.</p>
+    <div class="meta">
+      <span>측정 구간 2019-06 → 2026-08</span>
+      <span>7.3년</span>
+      <span>비용 10bp 반영</span>
+      <span>트랜치 되맞춤</span>
+    </div>
+  </header>
+
+  <section>
+    <p class="sec-label">구성</p>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>티커</th><th>자산</th><th>비중</th><th class="bar-cell"></th></tr>
+        </thead>
+        <tbody>
+          <tr class="pick"><td class="tick">DBMF</td><td>관리선물</td><td class="num">15.00%</td><td class="bar-cell"><span class="bar" style="width:100%"></span></td></tr>
+          <tr class="pick"><td class="tick">BTAL</td><td>고베타 숏</td><td class="num">10.00%</td><td class="bar-cell"><span class="bar" style="width:67%"></span></td></tr>
+          <tr class="pick"><td class="tick">UUP</td><td>달러</td><td class="num">10.00%</td><td class="bar-cell"><span class="bar" style="width:67%"></span></td></tr>
+          <tr class="rule-top"><td class="tick">BTC/USD</td><td>비트코인</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+          <tr><td class="tick">GLD</td><td>금</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+          <tr><td class="tick">TLT</td><td>미국 20년+ 국채</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+          <tr><td class="tick">QQQ</td><td>나스닥100</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+          <tr><td class="tick">SPY</td><td>S&amp;P500</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+          <tr><td class="tick">069500</td><td>KODEX 200</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+          <tr><td class="tick">VNQ</td><td>미국 리츠</td><td class="num">9.29%</td><td class="bar-cell"><span class="bar" style="width:62%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim" style="font-size:0.84rem;">헤지 3종을 뺀 65%를 자산군 7종에 균등 배분한다. 표기는 반올림값이고 정의상 각 9.2857%다.</p>
+  </section>
+
+  <section>
+    <p class="sec-label">성과</p>
+    <div class="stats">
+      <div class="stat"><span class="k">CAGR</span><span class="v">+11.71<span style="font-size:0.9rem">%</span></span><span class="n">7종만 하면 +17.95%</span></div>
+      <div class="stat"><span class="k">샤프</span><span class="v">1.15</span><span class="n">후보 5개 중 최고</span></div>
+      <div class="stat"><span class="k">최대낙폭</span><span class="v neg">−18.7<span style="font-size:0.9rem">%</span></span><span class="n">7종만 하면 −36.1%</span></div>
+      <div class="stat"><span class="k">최악의 해</span><span class="v neg">−15.7<span style="font-size:0.9rem">%</span></span><span class="n">2022년</span></div>
+      <div class="stat"><span class="k">1억 →</span><span class="v">2.22<span style="font-size:0.9rem">억</span></span><span class="n">7.3년, 7종만은 3.29억</span></div>
+    </div>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>연도</th><th>E 조합</th><th>7종만</th><th>차이</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">2020</td><td class="num pos">+30.1%</td><td class="num pos">+53.4%</td><td class="num neg">−23.3p</td></tr>
+          <tr><td class="num">2021</td><td class="num pos">+14.6%</td><td class="num pos">+23.3%</td><td class="num neg">−8.7p</td></tr>
+          <tr><td class="num">2022</td><td class="num neg">−15.7%</td><td class="num neg">−31.5%</td><td class="num pos">+15.8p</td></tr>
+          <tr><td class="num">2023</td><td class="num pos">+17.0%</td><td class="num pos">+35.7%</td><td class="num neg">−18.7p</td></tr>
+          <tr><td class="num">2024</td><td class="num pos">+17.0%</td><td class="num pos">+23.9%</td><td class="num neg">−6.9p</td></tr>
+          <tr><td class="num">2025</td><td class="num pos">+8.8%</td><td class="num pos">+17.8%</td><td class="num neg">−9.0p</td></tr>
+          <tr><td class="num">2026</td><td class="num pos">+8.6%</td><td class="num pos">+12.5%</td><td class="num neg">−3.9p</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim" style="font-size:0.84rem;">헤지는 여섯 해에 발목을 잡고 한 해에 값을 한다. 보험의 구조다.</p>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>위기 구간</th><th>E 조합</th><th>7종만</th><th>막아낸 폭</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2020 코로나 <span class="dim">2/19–3/23</span></td><td class="num neg">−14.9%</td><td class="num neg">−23.2%</td><td class="num pos">+8.3p</td></tr>
+          <tr><td>2022 인플레 <span class="dim">1/1–10/12</span></td><td class="num neg">−14.3%</td><td class="num neg">−32.8%</td><td class="num pos">+18.5p</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">헤지를 고른 기준</p>
+    <h2>성과가 아니라 오르는 이유로 골랐다</h2>
+    <div class="prose">
+      <p>2022년에 오른 것을 고르면 2022년에만 맞는 조합이 나온다. 하락장은 원인이 매번 다르고, 원인이 다르면 오르는 것도 다르다. 그래서 <strong>왜 오르는지 설명되는 것</strong>만 남겼다.</p>
+    </div>
+    <div class="reasons">
+      <div class="reason">
+        <span class="tk">DBMF</span>
+        <div class="body">
+          <span class="role">관리선물 · 15%</span>
+          <span class="why">주식·채권·통화·원자재 선물을 추세대로 롱숏한다. 하락 추세가 잡히면 숏으로 돌아서므로 위기에 오른다. 2020 −6.6%, 2022 +31.5%.</span>
+        </div>
+      </div>
+      <div class="reason">
+        <span class="tk">BTAL</span>
+        <div class="body">
+          <span class="role">고베타 숏 · 10%</span>
+          <span class="why">저베타 주식 롱, 고베타 주식 숏. 폭락에서 고베타가 더 크게 빠지므로 <strong>SPY가 −2% 이하인 날의 89%에서 올랐다.</strong> 다섯 위기 전부에서 방어했다. 대신 장기 CAGR이 −4.7%로 값이 비싸다.</span>
+        </div>
+      </div>
+      <div class="reason">
+        <span class="tk">UUP</span>
+        <div class="body">
+          <span class="role">달러 · 10%</span>
+          <span class="why">위기에 안전자산 수요가 달러로 몰린다. 다섯 위기 중 넷에서 방어했다.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">다른 후보</p>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>조합</th><th>CAGR</th><th>샤프</th><th>최대낙폭</th><th>최악의 해</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>A</strong> 7종만</td><td class="num">+17.95%</td><td class="num">1.08</td><td class="num neg">−36.1%</td><td class="num neg">−31.5%</td></tr>
+          <tr><td><strong>B</strong> +DBMF 20%</td><td class="num">+15.23%</td><td class="num">1.10</td><td class="num neg">−27.3%</td><td class="num neg">−22.7%</td></tr>
+          <tr><td><strong>C</strong> +DBMF 40 · 에너지 15 · 원자재 10</td><td class="num">+11.33%</td><td class="num">0.93</td><td class="num neg">−24.7%</td><td class="num pos">+3.2%</td></tr>
+          <tr><td><strong>D</strong> +DBMF 20 · BTAL 10</td><td class="num">+12.66%</td><td class="num">1.11</td><td class="num neg">−21.3%</td><td class="num neg">−17.5%</td></tr>
+          <tr class="pick"><td><strong>E</strong> +DBMF 15 · BTAL 10 · 달러 10</td><td class="num">+11.71%</td><td class="num">1.15</td><td class="num">−18.7%</td><td class="num">−15.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rejected">
+      <span class="tag">기각 · C</span>
+      <div class="prose wide-prose">
+        <p><strong>에너지·원자재 조합은 채택하지 않는다.</strong> 최악의 해가 +3.2%로 유일하게 플러스지만, 그 둘을 넣은 이유가 “2022년에 올랐으니까”였다. 결과를 보고 고른 것이다.</p>
+        <p>다른 위기에서 확인하면 성격이 드러난다. 2020 코로나에서 C는 <span class="num neg">−22.5%</span>로 7종만 하는 것과 거의 같았다. 에너지는 그 구간에 <span class="num neg">−57.0%</span>였다. 원자재는 인플레이션 충격에만 오르고 수요 충격에는 같이 빠진다.</p>
+        <p>2012–2026 긴 구간에서도 샤프 1.03으로 7종만(1.17)보다 나쁘다. <strong>수익도 E보다 낮고 샤프는 최하위다.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">여기까지 오면서 기각한 것들</p>
+    <h2>예측은 어느 방향으로도 되지 않았다</h2>
+    <div class="prose">
+      <p>이 조합은 “무엇이 오를지 맞힌다”를 포기한 뒤에 남은 것이다. 아래는 실제로 만들어 재보고 접은 것들이다.</p>
+    </div>
+    <div class="log">
+      <div class="log-row"><div class="what">가격 지표로 방향 예측<small>3분할 검증에서 승률 48–50.6%</small></div><span class="verdict no">우위 없음</span></div>
+      <div class="log-row"><div class="what">횡단면 모멘텀 700종목<small>초과수익의 65%가 NVDA 한 종목</small></div><span class="verdict no">소수 종목</span></div>
+      <div class="log-row"><div class="what">규칙 200개 생성 후 최적 선택<small>플라시보에서도 27개가 유의해 보임</small></div><span class="verdict no">선택 효과</span></div>
+      <div class="log-row"><div class="what">전날 미국 → 한국 오버나이트<small>갭 적중률 73.6%, 장중 47.3%</small></div><span class="verdict no">갭에 반영됨</span></div>
+      <div class="log-row"><div class="what">3종목 상태 조합 전수 탐색<small>64칸·320칸, 우연 기대치 안</small></div><span class="verdict no">우연 범위</span></div>
+      <div class="log-row"><div class="what">수급 데이터 기관·외국인<small>신호는 있으나 거래비용의 1/7</small></div><span class="verdict no">비용 미만</span></div>
+      <div class="log-row"><div class="what">10자산 다변량 머신러닝<small>10개 중 9개가 기준 이하, 나머지 하나는 갭</small></div><span class="verdict no">우위 없음</span></div>
+      <div class="log-row"><div class="what">상관 최소화 자동 선정<small>평균 ρ −0.05 달성, CAGR +2.97%</small></div><span class="verdict no">μ가 사라짐</span></div>
+      <div class="log-row"><div class="what">변동성 목표제<small>낙폭 12/12 개선, CAGR 12/12 악화</small></div><span class="verdict no">샤프 +0.00</span></div>
+      <div class="log-row"><div class="what">분산 + 되맞춤<small>이론 상한 σ²(1−ρ)/4 = 연 0.85%, 실측 0.51–1.19%</small></div><span class="verdict yes">이론치 도달</span></div>
+      <div class="log-row"><div class="what">구조적 헤지 편입<small>두 위기 모두에서 낙폭 8–18%p 방어</small></div><span class="verdict yes">재현됨</span></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">운용</p>
+    <h2>트랜치로 되맞춘다</h2>
+    <div class="prose">
+      <p>되맞추는 날짜 하나로 CAGR이 <strong>2%p</strong>, 샤프가 <strong>0.15</strong> 벌어진다. 특정 날짜를 고르면 그만큼이 운이 된다.</p>
+      <p>트랜치는 자금을 21등분해 각각 다른 날에 21거래일마다 되맞춘다. 실무상으로는 <strong>매일 목표 비중과의 차이를 1/21만큼만 조정</strong>하면 같다. 매일 손대지만 전체의 1/21씩이므로 <strong>회전율은 월 1회와 동일하다.</strong></p>
+      <p>조합 간 0.1%p 수준의 차이는 이 폭 안에 들어간다. E와 D의 샤프 차이 0.04는 근거로 쓸 수 없고, E와 A의 낙폭 차이 17.4%p는 쓸 수 있다.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">알고 있어야 할 것</p>
+    <div class="caveats">
+      <ul>
+        <li>DBMF 표본이 <strong>7.3년</strong>이고 그 안의 하락장이 2020과 2022 둘뿐이다. 관리선물은 추세가 뚜렷한 하락장에서 값을 하고 방향 없이 출렁이는 장에서는 못 한다.</li>
+        <li>BTAL과 UUP는 장기 기대수익이 음수이거나 0에 가깝다. <strong>상승장이 길어지면 계속 발목을 잡는다.</strong> BTAL은 15년 중 플러스인 해가 5번뿐이었다.</li>
+        <li>같은 기간 7종만 하면 1억이 3.29억, E는 2.22억이 됐다. <strong>7년간 1억이 안정성의 값</strong>이다.</li>
+        <li>“매년 플러스”는 백테스트로만 만들어진다. 샤프 1.15면 연 수익률이 음수일 확률이 약 13%이고, 7년에 한 해쯤 마이너스가 나오는 것이 정상이다. 실제로 2022년이 그랬다.</li>
+        <li>연 단위 이야기다. 이 조합도 <strong>이틀에 한 번꼴로 마이너스</strong>이고, 최악의 달은 −10%대다.</li>
+        <li>백테스트 결과이지 미래 수익의 약속이 아니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <span>sjk0825/Policy-Compliance-Validator · doc-validator/portfolios/final_e.json</span>
+    <span>측정 코드 scripts/final_portfolios.py · scripts/tranching.py · scripts/crisis_matrix.py</span>
+  </footer>
+
+</div>
