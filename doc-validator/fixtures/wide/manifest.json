@@ -2,7 +2,7 @@
   "source": "FinanceDataReader",
   "requested_start": "2015-01-01",
   "fetched_at": "2026-08-28T22:14:47",
-  "symbol_count": 760,
+  "symbol_count": 765,
   "row_count": 1964549,
   "failures": [
     {
@@ -8331,6 +8331,56 @@
       "file": "fixtures/wide/us_etf/KMLM.csv",
       "rows": 1440,
       "first_date": "2020-12-02",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "SVIX",
+      "name": "인버스VIX(-1x)",
+      "group": "us_etf",
+      "kind": "인버스VIX(-1x)",
+      "file": "fixtures/wide/us_etf/SVIX.csv",
+      "rows": 1107,
+      "first_date": "2022-03-30",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "SVXY",
+      "name": "인버스VIX(-0.5x)",
+      "group": "us_etf",
+      "kind": "인버스VIX(-0.5x)",
+      "file": "fixtures/wide/us_etf/SVXY.csv",
+      "rows": 3746,
+      "first_date": "2011-10-04",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "ZIVB",
+      "name": "인버스VIX중기",
+      "group": "us_etf",
+      "kind": "인버스VIX중기",
+      "file": "fixtures/wide/us_etf/ZIVB.csv",
+      "rows": 1,
+      "first_date": "2026-07-17",
+      "last_date": "2026-07-17"
+    },
+    {
+      "symbol": "VIXM",
+      "name": "VIX중기",
+      "group": "us_etf",
+      "kind": "VIX중기",
+      "file": "fixtures/wide/us_etf/VIXM.csv",
+      "rows": 3935,
+      "first_date": "2011-01-04",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "UVXY",
+      "name": "VIX레버리지",
+      "group": "us_etf",
+      "kind": "VIX레버리지",
+      "file": "fixtures/wide/us_etf/UVXY.csv",
+      "rows": 3746,
+      "first_date": "2011-10-04",
       "last_date": "2026-08-27"
     }
   ]
