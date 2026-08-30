@@ -99,6 +99,32 @@ def simulate(px: Dict[str, Dict[str, float]], calendar: List[str], syms: List[st
         avail = [s for s in syms if d in px[s]]
         if not avail:
             continue
+        prev = calendar[t - 1] if t > 0 else None
+
+        # 1. 어제 정한 비중을 오늘 수익률에 먼저 적용한다.
+        #    순서를 바꾸면 오늘 종가를 보고 비중을 정한 뒤 그 비중으로
+        #    오늘 수익을 먹는 셈이 된다. 그렇게 재면 룩백 1일·매일 조정에서
+        #    샤프 9.79, CAGR +260%가 나온다. 있을 수 없는 값이고 미래를
+        #    본 결과다.
+        if held:
+            port = 0.0
+            for s in avail:
+                if prev and prev in px[s] and px[s][prev]:
+                    port += held.get(s, 0) * (px[s][d] / px[s][prev] - 1)
+            eq *= (1 + port)
+            path.append(port)
+            peak = max(peak, eq)
+            mdd = min(mdd, eq / peak - 1)
+            grown = {}
+            for s in avail:
+                r = ((px[s][d] / px[s][prev] - 1)
+                     if prev and prev in px[s] and px[s][prev] else 0.0)
+                grown[s] = held.get(s, 0) * (1 + r)
+            tot = sum(grown.values())
+            if tot > 0:
+                held = {s: v / tot for s, v in grown.items()}
+
+        # 2. 그다음에 오늘 종가까지의 정보로 내일부터 쓸 비중을 정한다.
         if not held or k % REBAL == 0:
             mom: Dict[str, Optional[float]] = {}
             if t >= LOOKBACK:
@@ -112,22 +138,6 @@ def simulate(px: Dict[str, Dict[str, float]], calendar: List[str], syms: List[st
             turnover += turn
             eq *= (1 - turn * COST_BP / 10000)
             held = target
-        prev = calendar[t - 1] if t > 0 else None
-        port = 0.0
-        for s in avail:
-            if prev and prev in px[s] and px[s][prev]:
-                port += held.get(s, 0) * (px[s][d] / px[s][prev] - 1)
-        eq *= (1 + port)
-        path.append(port)
-        peak = max(peak, eq)
-        mdd = min(mdd, eq / peak - 1)
-        grown = {}
-        for s in avail:
-            r = (px[s][d] / px[s][prev] - 1) if prev and prev in px[s] and px[s][prev] else 0.0
-            grown[s] = held.get(s, 0) * (1 + r)
-        tot = sum(grown.values())
-        if tot > 0:
-            held = {s: v / tot for s, v in grown.items()}
 
     if len(path) < 200:
         return None
