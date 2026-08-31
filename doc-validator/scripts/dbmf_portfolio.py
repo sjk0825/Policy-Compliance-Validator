@@ -47,6 +47,7 @@ def simulate(store: PriceStore, calendar: List[str], weights: Dict[str, float],
         i = calendar.index(d)
         prev = calendar[i - 1] if i > 0 else None
         avail = [s for s in syms if d in px[s]]
+        avail_set = set(avail)
         if not avail:
             continue
         if held:
@@ -56,9 +57,11 @@ def simulate(store: PriceStore, calendar: List[str], weights: Dict[str, float],
             path.append(port)
             peak = max(peak, eq)
             mdd = min(mdd, eq / peak - 1)
-            grown = {s: held.get(s, 0) * (1 + ((px[s][d] / px[s][prev] - 1)
-                     if prev and prev in px[s] and px[s][prev] else 0.0))
-                     for s in avail}
+            # 휴장 종목은 보유를 유지한다.
+            grown = {s: (w * (px[s][d] / px[s][prev])
+                         if (s in avail_set and prev and prev in px[s]
+                             and px[s][prev]) else w)
+                     for s, w in held.items()}
             tot = sum(grown.values())
             if tot > 0:
                 held = {s: v / tot for s, v in grown.items()}

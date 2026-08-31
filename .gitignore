@@ -30,3 +30,5 @@ doc-validator/logs/*.log
 
 .env
 *.deb
+doc-validator/fixtures/crisis2008/*.csv
+!doc-validator/fixtures/crisis2008/manifest.json

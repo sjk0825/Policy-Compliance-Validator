@@ -49,6 +49,7 @@ def simulate(series, calendar, syms, lo, hi, freq: int, cost_bp: float,
     eq, peak, mdd, path, turnover = 1.0, 1.0, 0.0, [], 0.0
     for k, d in enumerate(days):
         avail = [s for s in syms if d in series.get(s, {})]
+        avail_set = set(avail)
         if not avail:
             continue
         target = {s: 1.0 / len(avail) for s in avail}
@@ -69,7 +70,11 @@ def simulate(series, calendar, syms, lo, hi, freq: int, cost_bp: float,
         path.append(port)
         peak = max(peak, eq)
         mdd = min(mdd, eq / peak - 1)
-        grown = {s: held.get(s, 0) * (1 + series[s][d]) for s in avail}
+        # 휴장 종목은 보유를 유지한다. avail만 순회하면 그날 시장이
+        # 닫힌 자산을 전량 매도해 나머지에 분배하는 셈이 되는데,
+        # 실제로는 평가액이 그대로일 뿐 계속 들고 있다.
+        grown = {s: (w * (1 + series[s][d]) if s in avail_set else w)
+                 for s, w in held.items()}
         tot = sum(grown.values())
         if tot > 0:
             held = {s: v / tot for s, v in grown.items()}

@@ -59,11 +59,15 @@ def one_path(px, cal, weights, lo, hi, offset) -> Optional[List[float]]:
         i = cal.index(d)
         prev = cal[i - 1] if i > 0 else None
         avail = [s for s in weights if s in px and d in px[s] and prev and prev in px[s]]
+        avail_set = set(avail)
         if not avail:
             continue
         if held:
             out.append(sum(held.get(s, 0) * (px[s][d] / px[s][prev] - 1) for s in avail))
-            g = {s: held.get(s, 0) * (1 + (px[s][d] / px[s][prev] - 1)) for s in avail}
+            # 휴장 종목은 보유를 유지한다. avail만 순회하면 그날 시장이
+            # 닫힌 자산을 전량 매도해 나머지에 분배하는 셈이 된다.
+            g = {s: (w * (px[s][d] / px[s][prev]) if s in avail_set else w)
+                 for s, w in held.items()}
             tot = sum(g.values())
             if tot > 0:
                 held = {s: v / tot for s, v in g.items()}
