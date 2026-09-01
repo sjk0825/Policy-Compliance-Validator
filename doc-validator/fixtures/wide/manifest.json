@@ -1,9 +1,9 @@
 {
   "source": "FinanceDataReader",
   "requested_start": "2015-01-01",
-  "fetched_at": "2026-08-28T22:14:47",
-  "symbol_count": 765,
-  "row_count": 1964549,
+  "fetched_at": "2026-09-01T22:20:52",
+  "symbol_count": 767,
+  "row_count": 2151916,
   "failures": [
     {
       "symbol": "BRKB",
@@ -2293,6 +2293,36 @@
       "sha256": "0440e68684301af5ecae101609ff21009b886770354983fa80c2669f45e468f3"
     },
     {
+      "symbol": "BIL",
+      "name": "초단기채",
+      "group": "us_etf",
+      "kind": "초단기채",
+      "file": "fixtures/wide/us_etf/BIL.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "BITO",
+      "name": "비트코인선물",
+      "group": "us_etf",
+      "kind": "비트코인선물",
+      "file": "fixtures/wide/us_etf/BITO.csv",
+      "rows": 1218,
+      "first_date": "2021-10-20",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "BTAL",
+      "name": "고베타숏/저베타롱",
+      "group": "us_etf",
+      "kind": "고베타숏/저베타롱",
+      "file": "fixtures/wide/us_etf/BTAL.csv",
+      "rows": 3761,
+      "first_date": "2011-09-13",
+      "last_date": "2026-08-27"
+    },
+    {
       "symbol": "BTC/USD",
       "name": "Bitcoin",
       "group": "us_etf",
@@ -2302,6 +2332,36 @@
       "first_date": "2014-09-17",
       "last_date": "2026-08-29",
       "sha256": "20dfc253691874d0b27b83bbaf2cfb6494439c0beffd7ba81902230a7fb17256"
+    },
+    {
+      "symbol": "CTA",
+      "name": "관리선물",
+      "group": "us_etf",
+      "kind": "관리선물",
+      "file": "fixtures/wide/us_etf/CTA.csv",
+      "rows": 1123,
+      "first_date": "2022-03-08",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "DBA",
+      "name": "농산물",
+      "group": "us_etf",
+      "kind": "농산물",
+      "file": "fixtures/wide/us_etf/DBA.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "DBC",
+      "name": "원자재",
+      "group": "us_etf",
+      "kind": "원자재",
+      "file": "fixtures/wide/us_etf/DBC.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
     },
     {
       "symbol": "DBMF",
@@ -2315,6 +2375,26 @@
       "sha256": "964676f184c0d342031728025bdee1c26a2c4d13bff918770674861f7eb6aa75"
     },
     {
+      "symbol": "DOG",
+      "name": "다우 인버스",
+      "group": "us_etf",
+      "kind": "다우 인버스",
+      "file": "fixtures/wide/us_etf/DOG.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "EDV",
+      "name": "초장기채",
+      "group": "us_etf",
+      "kind": "초장기채",
+      "file": "fixtures/wide/us_etf/EDV.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
       "symbol": "EEM",
       "name": "MSCI Emerging",
       "group": "us_etf",
@@ -2324,6 +2404,66 @@
       "first_date": "2009-12-31",
       "last_date": "2026-08-27",
       "sha256": "2fd39bd0549dbcb3b2e0388460a8551ea38d3e5e581d781b5ccb2ff12c5e02b8"
+    },
+    {
+      "symbol": "EFA",
+      "name": "선진국 주식",
+      "group": "us_etf",
+      "kind": "선진국 주식",
+      "file": "fixtures/wide/us_etf/EFA.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "EMB",
+      "name": "신흥국채권",
+      "group": "us_etf",
+      "kind": "신흥국채권",
+      "file": "fixtures/wide/us_etf/EMB.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "EWJ",
+      "name": "일본",
+      "group": "us_etf",
+      "kind": "일본",
+      "file": "fixtures/wide/us_etf/EWJ.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "EWY",
+      "name": "한국(달러표시)",
+      "group": "us_etf",
+      "kind": "한국(달러표시)",
+      "file": "fixtures/wide/us_etf/EWY.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "FXE",
+      "name": "유로",
+      "group": "us_etf",
+      "kind": "유로",
+      "file": "fixtures/wide/us_etf/FXE.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "FXY",
+      "name": "엔화",
+      "group": "us_etf",
+      "kind": "엔화",
+      "file": "fixtures/wide/us_etf/FXY.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
     },
     {
       "symbol": "GLD",
@@ -2337,6 +2477,77 @@
       "sha256": "f9c96a04ab9bafacd124a111a39f568012035ce9aed2b04a5a422b311358ec9f"
     },
     {
+      "symbol": "GLDM",
+      "name": "금(저비용)",
+      "group": "us_etf",
+      "kind": "금(저비용)",
+      "file": "fixtures/wide/us_etf/GLDM.csv",
+      "rows": 2054,
+      "first_date": "2018-06-26",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "GSG",
+      "name": "원자재광범위",
+      "group": "us_etf",
+      "kind": "원자재광범위",
+      "file": "fixtures/wide/us_etf/GSG.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "HIBL",
+      "name": "Direxion S&P500 고베타 3배",
+      "group": "us_etf",
+      "kind": "레버리지",
+      "file": "fixtures/wide/us_etf/HIBL.csv",
+      "rows": 1710,
+      "first_date": "2019-11-07",
+      "last_date": "2026-08-31",
+      "sha256": "070398575881be695aeb8bd3daa4af2e4701a5a64fbcd4242b227bdec490ce80"
+    },
+    {
+      "symbol": "HYG",
+      "name": "하이일드",
+      "group": "us_etf",
+      "kind": "하이일드",
+      "file": "fixtures/wide/us_etf/HYG.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "IAU",
+      "name": "금(대체)",
+      "group": "us_etf",
+      "kind": "금(대체)",
+      "file": "fixtures/wide/us_etf/IAU.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "IEF",
+      "name": "미국 중기채",
+      "group": "us_etf",
+      "kind": "미국 중기채",
+      "file": "fixtures/wide/us_etf/IEF.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "IGF",
+      "name": "인프라",
+      "group": "us_etf",
+      "kind": "인프라",
+      "file": "fixtures/wide/us_etf/IGF.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
       "symbol": "IWM",
       "name": "Russell 2000",
       "group": "us_etf",
@@ -2346,6 +2557,76 @@
       "first_date": "2009-12-31",
       "last_date": "2026-08-27",
       "sha256": "85d260c98d73d2ba6db08773e655de9055f6bef3178a619b00c59503851cffe1"
+    },
+    {
+      "symbol": "IYR",
+      "name": "미국 부동산",
+      "group": "us_etf",
+      "kind": "미국 부동산",
+      "file": "fixtures/wide/us_etf/IYR.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "KMLM",
+      "name": "관리선물2",
+      "group": "us_etf",
+      "kind": "관리선물2",
+      "file": "fixtures/wide/us_etf/KMLM.csv",
+      "rows": 1440,
+      "first_date": "2020-12-02",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "LQD",
+      "name": "우량 회사채",
+      "group": "us_etf",
+      "kind": "우량 회사채",
+      "file": "fixtures/wide/us_etf/LQD.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "MOAT",
+      "name": "해자",
+      "group": "us_etf",
+      "kind": "해자",
+      "file": "fixtures/wide/us_etf/MOAT.csv",
+      "rows": 3606,
+      "first_date": "2012-04-25",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "MUB",
+      "name": "지방채",
+      "group": "us_etf",
+      "kind": "지방채",
+      "file": "fixtures/wide/us_etf/MUB.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "PFF",
+      "name": "우선주",
+      "group": "us_etf",
+      "kind": "우선주",
+      "file": "fixtures/wide/us_etf/PFF.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "PSQ",
+      "name": "나스닥 인버스",
+      "group": "us_etf",
+      "kind": "나스닥 인버스",
+      "file": "fixtures/wide/us_etf/PSQ.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
     },
     {
       "symbol": "QQQ",
@@ -2359,6 +2640,26 @@
       "sha256": "f405d6e2a507893f0d28254abc7fd0bf07d350f08cb24fa256e9482d56e78eb9"
     },
     {
+      "symbol": "SH",
+      "name": "S&P 인버스",
+      "group": "us_etf",
+      "kind": "S&P 인버스",
+      "file": "fixtures/wide/us_etf/SH.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "SHY",
+      "name": "미국 단기채",
+      "group": "us_etf",
+      "kind": "미국 단기채",
+      "file": "fixtures/wide/us_etf/SHY.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
       "symbol": "SLV",
       "name": "Silver",
       "group": "us_etf",
@@ -2368,6 +2669,27 @@
       "first_date": "2009-12-31",
       "last_date": "2026-08-27",
       "sha256": "1f1a6987b07e27e4faaee2b99ed8543bd794160bf4be0b1ab6b962dbcd150d7b"
+    },
+    {
+      "symbol": "SPHB",
+      "name": "Invesco S&P500 고베타",
+      "group": "us_etf",
+      "kind": null,
+      "file": "fixtures/wide/us_etf/SPHB.csv",
+      "rows": 3852,
+      "first_date": "2011-05-05",
+      "last_date": "2026-08-31",
+      "sha256": "36d5b659f4702aeec44c4624300b20505e0536fee8f1c9eeb58efed0ec8980b8"
+    },
+    {
+      "symbol": "SPLV",
+      "name": "저변동성주",
+      "group": "us_etf",
+      "kind": "저변동성주",
+      "file": "fixtures/wide/us_etf/SPLV.csv",
+      "rows": 3851,
+      "first_date": "2011-05-05",
+      "last_date": "2026-08-27"
     },
     {
       "symbol": "SPY",
@@ -2381,6 +2703,46 @@
       "sha256": "750a443021562804df251d69366157e476e1d5ec7162d798312faed7ea3b5bac"
     },
     {
+      "symbol": "SVIX",
+      "name": "인버스VIX(-1x)",
+      "group": "us_etf",
+      "kind": "인버스VIX(-1x)",
+      "file": "fixtures/wide/us_etf/SVIX.csv",
+      "rows": 1107,
+      "first_date": "2022-03-30",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "SVXY",
+      "name": "인버스VIX(-0.5x)",
+      "group": "us_etf",
+      "kind": "인버스VIX(-0.5x)",
+      "file": "fixtures/wide/us_etf/SVXY.csv",
+      "rows": 3746,
+      "first_date": "2011-10-04",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "TAIL",
+      "name": "꼬리위험 헤지",
+      "group": "us_etf",
+      "kind": "꼬리위험 헤지",
+      "file": "fixtures/wide/us_etf/TAIL.csv",
+      "rows": 2361,
+      "first_date": "2017-04-06",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "TIP",
+      "name": "물가연동채",
+      "group": "us_etf",
+      "kind": "물가연동채",
+      "file": "fixtures/wide/us_etf/TIP.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
       "symbol": "TLT",
       "name": "20+ Year Treasury",
       "group": "us_etf",
@@ -2392,6 +2754,26 @@
       "sha256": "a6884c2bd2e3afb73d25808afeddbcd36a74faec4b4d64ac2c07b03f762610d5"
     },
     {
+      "symbol": "USMV",
+      "name": "최소변동성",
+      "group": "us_etf",
+      "kind": "최소변동성",
+      "file": "fixtures/wide/us_etf/USMV.csv",
+      "rows": 3734,
+      "first_date": "2011-10-20",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "USO",
+      "name": "원유",
+      "group": "us_etf",
+      "kind": "원유",
+      "file": "fixtures/wide/us_etf/USO.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
       "symbol": "UUP",
       "name": "US Dollar Index",
       "group": "us_etf",
@@ -2401,6 +2783,116 @@
       "first_date": "2009-12-31",
       "last_date": "2026-08-27",
       "sha256": "d33373ff85dea0aca88115811e3fce7a0fe377e15817ff8ccc0c039b48ec904d"
+    },
+    {
+      "symbol": "UVXY",
+      "name": "VIX레버리지",
+      "group": "us_etf",
+      "kind": "VIX레버리지",
+      "file": "fixtures/wide/us_etf/UVXY.csv",
+      "rows": 3746,
+      "first_date": "2011-10-04",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "VGK",
+      "name": "유럽주식",
+      "group": "us_etf",
+      "kind": "유럽주식",
+      "file": "fixtures/wide/us_etf/VGK.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "VIXM",
+      "name": "VIX중기",
+      "group": "us_etf",
+      "kind": "VIX중기",
+      "file": "fixtures/wide/us_etf/VIXM.csv",
+      "rows": 3935,
+      "first_date": "2011-01-04",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "VIXY",
+      "name": "VIX 단기",
+      "group": "us_etf",
+      "kind": "VIX 단기",
+      "file": "fixtures/wide/us_etf/VIXY.csv",
+      "rows": 3935,
+      "first_date": "2011-01-04",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "VNQ",
+      "name": "미국 리츠(부동산)",
+      "group": "us_etf",
+      "kind": "미국 리츠(부동산)",
+      "file": "fixtures/wide/us_etf/VNQ.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "VWO",
+      "name": "신흥국",
+      "group": "us_etf",
+      "kind": "신흥국",
+      "file": "fixtures/wide/us_etf/VWO.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "VXX",
+      "name": "VIX 단기선물",
+      "group": "us_etf",
+      "kind": "VIX 단기선물",
+      "file": "fixtures/wide/us_etf/VXX.csv",
+      "rows": 2159,
+      "first_date": "2018-01-25",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "XLE",
+      "name": "에너지주",
+      "group": "us_etf",
+      "kind": "에너지주",
+      "file": "fixtures/wide/us_etf/XLE.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "XLU",
+      "name": "유틸리티",
+      "group": "us_etf",
+      "kind": "유틸리티",
+      "file": "fixtures/wide/us_etf/XLU.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
+    },
+    {
+      "symbol": "ZIVB",
+      "name": "인버스VIX중기",
+      "group": "us_etf",
+      "kind": "인버스VIX중기",
+      "file": "fixtures/wide/us_etf/ZIVB.csv",
+      "rows": 1,
+      "first_date": "2026-07-17",
+      "last_date": "2026-07-17"
+    },
+    {
+      "symbol": "ZROZ",
+      "name": "제로쿠폰채",
+      "group": "us_etf",
+      "kind": "제로쿠폰채",
+      "file": "fixtures/wide/us_etf/ZROZ.csv",
+      "rows": 4189,
+      "first_date": "2009-12-31",
+      "last_date": "2026-08-27"
     },
     {
       "symbol": "A",
@@ -7912,476 +8404,6 @@
       "first_date": "2014-12-31",
       "last_date": "2026-08-27",
       "sha256": "7ef7e7d8a662874e4dbd5d3dc3ea6351c22cd98a8c91243506ae1d81e8bbd8ba"
-    },
-    {
-      "symbol": "VNQ",
-      "name": "미국 리츠(부동산)",
-      "group": "us_etf",
-      "kind": "미국 리츠(부동산)",
-      "file": "fixtures/wide/us_etf/VNQ.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "IYR",
-      "name": "미국 부동산",
-      "group": "us_etf",
-      "kind": "미국 부동산",
-      "file": "fixtures/wide/us_etf/IYR.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "EFA",
-      "name": "선진국 주식",
-      "group": "us_etf",
-      "kind": "선진국 주식",
-      "file": "fixtures/wide/us_etf/EFA.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "EWJ",
-      "name": "일본",
-      "group": "us_etf",
-      "kind": "일본",
-      "file": "fixtures/wide/us_etf/EWJ.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "VWO",
-      "name": "신흥국",
-      "group": "us_etf",
-      "kind": "신흥국",
-      "file": "fixtures/wide/us_etf/VWO.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "IEF",
-      "name": "미국 중기채",
-      "group": "us_etf",
-      "kind": "미국 중기채",
-      "file": "fixtures/wide/us_etf/IEF.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "SHY",
-      "name": "미국 단기채",
-      "group": "us_etf",
-      "kind": "미국 단기채",
-      "file": "fixtures/wide/us_etf/SHY.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "TIP",
-      "name": "물가연동채",
-      "group": "us_etf",
-      "kind": "물가연동채",
-      "file": "fixtures/wide/us_etf/TIP.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "LQD",
-      "name": "우량 회사채",
-      "group": "us_etf",
-      "kind": "우량 회사채",
-      "file": "fixtures/wide/us_etf/LQD.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "HYG",
-      "name": "하이일드",
-      "group": "us_etf",
-      "kind": "하이일드",
-      "file": "fixtures/wide/us_etf/HYG.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "DBC",
-      "name": "원자재",
-      "group": "us_etf",
-      "kind": "원자재",
-      "file": "fixtures/wide/us_etf/DBC.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "USO",
-      "name": "원유",
-      "group": "us_etf",
-      "kind": "원유",
-      "file": "fixtures/wide/us_etf/USO.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "XLE",
-      "name": "에너지주",
-      "group": "us_etf",
-      "kind": "에너지주",
-      "file": "fixtures/wide/us_etf/XLE.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "XLU",
-      "name": "유틸리티",
-      "group": "us_etf",
-      "kind": "유틸리티",
-      "file": "fixtures/wide/us_etf/XLU.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "IGF",
-      "name": "인프라",
-      "group": "us_etf",
-      "kind": "인프라",
-      "file": "fixtures/wide/us_etf/IGF.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "DBA",
-      "name": "농산물",
-      "group": "us_etf",
-      "kind": "농산물",
-      "file": "fixtures/wide/us_etf/DBA.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "FXY",
-      "name": "엔화",
-      "group": "us_etf",
-      "kind": "엔화",
-      "file": "fixtures/wide/us_etf/FXY.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "FXE",
-      "name": "유로",
-      "group": "us_etf",
-      "kind": "유로",
-      "file": "fixtures/wide/us_etf/FXE.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "VGK",
-      "name": "유럽주식",
-      "group": "us_etf",
-      "kind": "유럽주식",
-      "file": "fixtures/wide/us_etf/VGK.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "EWY",
-      "name": "한국(달러표시)",
-      "group": "us_etf",
-      "kind": "한국(달러표시)",
-      "file": "fixtures/wide/us_etf/EWY.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "GSG",
-      "name": "원자재광범위",
-      "group": "us_etf",
-      "kind": "원자재광범위",
-      "file": "fixtures/wide/us_etf/GSG.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "IAU",
-      "name": "금(대체)",
-      "group": "us_etf",
-      "kind": "금(대체)",
-      "file": "fixtures/wide/us_etf/IAU.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "BIL",
-      "name": "초단기채",
-      "group": "us_etf",
-      "kind": "초단기채",
-      "file": "fixtures/wide/us_etf/BIL.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "MUB",
-      "name": "지방채",
-      "group": "us_etf",
-      "kind": "지방채",
-      "file": "fixtures/wide/us_etf/MUB.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "EMB",
-      "name": "신흥국채권",
-      "group": "us_etf",
-      "kind": "신흥국채권",
-      "file": "fixtures/wide/us_etf/EMB.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "PFF",
-      "name": "우선주",
-      "group": "us_etf",
-      "kind": "우선주",
-      "file": "fixtures/wide/us_etf/PFF.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "MOAT",
-      "name": "해자",
-      "group": "us_etf",
-      "kind": "해자",
-      "file": "fixtures/wide/us_etf/MOAT.csv",
-      "rows": 3606,
-      "first_date": "2012-04-25",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "BITO",
-      "name": "비트코인선물",
-      "group": "us_etf",
-      "kind": "비트코인선물",
-      "file": "fixtures/wide/us_etf/BITO.csv",
-      "rows": 1218,
-      "first_date": "2021-10-20",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "SH",
-      "name": "S&P 인버스",
-      "group": "us_etf",
-      "kind": "S&P 인버스",
-      "file": "fixtures/wide/us_etf/SH.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "PSQ",
-      "name": "나스닥 인버스",
-      "group": "us_etf",
-      "kind": "나스닥 인버스",
-      "file": "fixtures/wide/us_etf/PSQ.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "DOG",
-      "name": "다우 인버스",
-      "group": "us_etf",
-      "kind": "다우 인버스",
-      "file": "fixtures/wide/us_etf/DOG.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "VXX",
-      "name": "VIX 단기선물",
-      "group": "us_etf",
-      "kind": "VIX 단기선물",
-      "file": "fixtures/wide/us_etf/VXX.csv",
-      "rows": 2159,
-      "first_date": "2018-01-25",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "VIXY",
-      "name": "VIX 단기",
-      "group": "us_etf",
-      "kind": "VIX 단기",
-      "file": "fixtures/wide/us_etf/VIXY.csv",
-      "rows": 3935,
-      "first_date": "2011-01-04",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "TAIL",
-      "name": "꼬리위험 헤지",
-      "group": "us_etf",
-      "kind": "꼬리위험 헤지",
-      "file": "fixtures/wide/us_etf/TAIL.csv",
-      "rows": 2361,
-      "first_date": "2017-04-06",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "BTAL",
-      "name": "고베타숏/저베타롱",
-      "group": "us_etf",
-      "kind": "고베타숏/저베타롱",
-      "file": "fixtures/wide/us_etf/BTAL.csv",
-      "rows": 3761,
-      "first_date": "2011-09-13",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "SPLV",
-      "name": "저변동성주",
-      "group": "us_etf",
-      "kind": "저변동성주",
-      "file": "fixtures/wide/us_etf/SPLV.csv",
-      "rows": 3851,
-      "first_date": "2011-05-05",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "USMV",
-      "name": "최소변동성",
-      "group": "us_etf",
-      "kind": "최소변동성",
-      "file": "fixtures/wide/us_etf/USMV.csv",
-      "rows": 3734,
-      "first_date": "2011-10-20",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "EDV",
-      "name": "초장기채",
-      "group": "us_etf",
-      "kind": "초장기채",
-      "file": "fixtures/wide/us_etf/EDV.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "ZROZ",
-      "name": "제로쿠폰채",
-      "group": "us_etf",
-      "kind": "제로쿠폰채",
-      "file": "fixtures/wide/us_etf/ZROZ.csv",
-      "rows": 4189,
-      "first_date": "2009-12-31",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "GLDM",
-      "name": "금(저비용)",
-      "group": "us_etf",
-      "kind": "금(저비용)",
-      "file": "fixtures/wide/us_etf/GLDM.csv",
-      "rows": 2054,
-      "first_date": "2018-06-26",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "CTA",
-      "name": "관리선물",
-      "group": "us_etf",
-      "kind": "관리선물",
-      "file": "fixtures/wide/us_etf/CTA.csv",
-      "rows": 1123,
-      "first_date": "2022-03-08",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "KMLM",
-      "name": "관리선물2",
-      "group": "us_etf",
-      "kind": "관리선물2",
-      "file": "fixtures/wide/us_etf/KMLM.csv",
-      "rows": 1440,
-      "first_date": "2020-12-02",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "SVIX",
-      "name": "인버스VIX(-1x)",
-      "group": "us_etf",
-      "kind": "인버스VIX(-1x)",
-      "file": "fixtures/wide/us_etf/SVIX.csv",
-      "rows": 1107,
-      "first_date": "2022-03-30",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "SVXY",
-      "name": "인버스VIX(-0.5x)",
-      "group": "us_etf",
-      "kind": "인버스VIX(-0.5x)",
-      "file": "fixtures/wide/us_etf/SVXY.csv",
-      "rows": 3746,
-      "first_date": "2011-10-04",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "ZIVB",
-      "name": "인버스VIX중기",
-      "group": "us_etf",
-      "kind": "인버스VIX중기",
-      "file": "fixtures/wide/us_etf/ZIVB.csv",
-      "rows": 1,
-      "first_date": "2026-07-17",
-      "last_date": "2026-07-17"
-    },
-    {
-      "symbol": "VIXM",
-      "name": "VIX중기",
-      "group": "us_etf",
-      "kind": "VIX중기",
-      "file": "fixtures/wide/us_etf/VIXM.csv",
-      "rows": 3935,
-      "first_date": "2011-01-04",
-      "last_date": "2026-08-27"
-    },
-    {
-      "symbol": "UVXY",
-      "name": "VIX레버리지",
-      "group": "us_etf",
-      "kind": "VIX레버리지",
-      "file": "fixtures/wide/us_etf/UVXY.csv",
-      "rows": 3746,
-      "first_date": "2011-10-04",
-      "last_date": "2026-08-27"
     }
   ]
 }
