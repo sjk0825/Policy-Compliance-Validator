@@ -26,14 +26,15 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "fixtures" / "live"
 CORE = ["SPY", "QQQ", "069500", "VNQ", "TLT", "IEF", "GLD", "SLV",
         "DBC", "XLE", "XLU", "EFA", "EEM", "BTC/USD"]
+KRW_ASSETS = {"069500"}   # 이미 원화로 거래된다. 나머지는 환율을 곱한다
 HEDGE = {"DBMF": 0.15, "BTAL": 0.10, "UUP": 0.10}
-CASH = "BIL"
+CASH = "BIL"        # 백테스트 대용물. 실제로는 원화 예금/CMA로 둔다
 NAMES = {"SPY": "S&P500", "QQQ": "나스닥100", "069500": "KODEX 200",
          "VNQ": "미국 리츠", "TLT": "미국 20년+ 국채", "IEF": "미국 7-10년 국채",
          "GLD": "금", "SLV": "은", "DBC": "원자재", "XLE": "에너지",
          "XLU": "유틸리티", "EFA": "선진국(미국 외)", "EEM": "신흥국",
          "BTC/USD": "비트코인", "DBMF": "관리선물", "BTAL": "고베타 숏",
-         "UUP": "달러", "BIL": "현금(단기 국채)"}
+         "UUP": "달러", "BIL": "현금 (원화 예금·CMA)"}
 MA = 200          # 보유/현금을 가르는 선
 MA_REGIME = 60    # 기울기를 바꾸는 선
 TILT_L = 5        # 기울기 기준이 되는 최근 수익률 기간
@@ -42,10 +43,11 @@ K_BELOW = 0.00    # 선 아래: 기울이지 않는다 (기여가 없어 뺀다)
 
 
 def fetch(refresh: bool) -> Dict[str, List[tuple]]:
+    """원화 환산 종가. 국내 거주자가 계좌에서 보는 값이 이것이다."""
     CACHE.mkdir(parents=True, exist_ok=True)
     import csv
-    out: Dict[str, List[tuple]] = {}
-    syms = CORE + list(HEDGE) + [CASH]
+    raw: Dict[str, List[tuple]] = {}
+    syms = CORE + list(HEDGE) + [CASH, "USD/KRW"]
     need = [s for s in syms
             if refresh or not (CACHE / f"{s.replace('/', '-')}.csv").exists()]
     if need:
@@ -62,7 +64,20 @@ def fetch(refresh: bool) -> Dict[str, List[tuple]]:
     for s in syms:
         p = CACHE / f"{s.replace('/', '-')}.csv"
         with p.open(encoding="utf-8") as f:
-            out[s] = [(r["Date"], float(r["Close"])) for r in csv.DictReader(f)]
+            raw[s] = [(r["Date"], float(r["Close"])) for r in csv.DictReader(f)]
+
+    fx = dict(raw.pop("USD/KRW"))
+    dates = sorted({d for rows in raw.values() for d, _ in rows})
+    filled, last = {}, None
+    for d in dates:                      # 휴일은 직전 고시를 쓴다
+        if d in fx:
+            last = fx[d]
+        if last:
+            filled[d] = last
+    out: Dict[str, List[tuple]] = {}
+    for s, rows in raw.items():
+        out[s] = [(d, v if s in KRW_ASSETS else v * filled[d])
+                  for d, v in rows if d in filled]
     return out
 
 
@@ -84,10 +99,11 @@ def main() -> int:
         universe = CORE + list(HEDGE)
 
     print(f"판정일 기준  {max(px['SPY'])[0]}   (오늘 {datetime.now():%Y-%m-%d})")
+    print(f"기준통화  원화 — 미국 자산은 환율을 곱해 계산한다")
     print(f"규칙  ① {MA}일선 위면 보유, 아래면 그 몫만 현금 (21거래일마다 재판정)")
     print(f"      ② {MA_REGIME}일선 위 자산은 최근 {TILT_L}일 강세 쪽으로 k={K_ABOVE:+.2f},")
     print(f"         아래 자산은 약세 쪽으로 k={K_BELOW:+.2f} 만큼 비중을 기울인다")
-    print(f"      ③ 되맞춤은 63거래일 트랜치 (매일 목표와의 차이를 1/63씩)\n")
+    print(f"      ③ 되맞춤은 21거래일 트랜치 (매일 목표와의 차이를 1/21씩)\n")
 
     on: Dict[str, bool] = {}
     hot: Dict[str, bool] = {}
@@ -116,7 +132,7 @@ def main() -> int:
     tot = sum(raw.values())
     sleeve = {s: v / tot for s, v in raw.items()}
 
-    print(f"  {'종목':<10}{'설명':<15}{'종가':>11}{'200일선':>9}{'60일선':>9}"
+    print(f"  {'종목':<10}{'설명':<15}{'원화종가':>13}{'200일선':>9}{'60일선':>9}"
           f"{'5일':>8}{'기울기':>8}  신호")
     print("  " + "-" * 84)
     for s in universe:
@@ -126,7 +142,7 @@ def main() -> int:
         g60 = (last / st.mean(v for _, v in rows[-MA_REGIME:]) - 1) * 100
         tilt = (sleeve[s] / base[s] - 1) * 100
         mark = "○ 보유" if on[s] else "● 현금"
-        print(f"  {s:<10}{NAMES.get(s, ''):<15}{last:>11,.2f}{g200:>+8.1f}%"
+        print(f"  {s:<10}{NAMES.get(s, ''):<15}{last:>13,.0f}{g200:>+8.1f}%"
               f"{g60:>+8.1f}%{mom.get(s,0)*100:>+7.1f}%{tilt:>+7.1f}%  {mark}")
 
     tgt: Dict[str, float] = {}
@@ -153,8 +169,8 @@ def main() -> int:
                     "regime": f"ma{MA_REGIME}",
                     "tilt": {"lookback": TILT_L, "k_above": K_ABOVE,
                              "k_below": K_BELOW},
-                    "rebalance": "63거래일 트랜치",
-                    "cash": CASH},
+                    "rebalance": "21거래일 트랜치",
+                    "cash": CASH, "basis": "KRW"},
            "base_weights": base, "signal_on": on, "regime_above": hot,
            "sleeve_weights": sleeve, "target_weights": tgt}
     p = ROOT / "portfolios" / f"{out['id']}.json"
