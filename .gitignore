@@ -34,3 +34,5 @@ doc-validator/fixtures/crisis2008/*.csv
 !doc-validator/fixtures/crisis2008/manifest.json
 # 장기 검증용 원자료. 스크립트가 다시 받는다.
 doc-validator/fixtures/longrun/*.csv
+# 오늘 판정용 최신 시세. 매번 다시 받는다.
+doc-validator/fixtures/live/*.csv
