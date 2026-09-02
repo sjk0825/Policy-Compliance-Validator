@@ -15,6 +15,7 @@
 """
 import argparse
 import json
+import math
 import statistics as st
 import sys
 from datetime import datetime
@@ -33,7 +34,11 @@ NAMES = {"SPY": "S&P500", "QQQ": "나스닥100", "069500": "KODEX 200",
          "XLU": "유틸리티", "EFA": "선진국(미국 외)", "EEM": "신흥국",
          "BTC/USD": "비트코인", "DBMF": "관리선물", "BTAL": "고베타 숏",
          "UUP": "달러", "BIL": "현금(단기 국채)"}
-MA = 200
+MA = 200          # 보유/현금을 가르는 선
+MA_REGIME = 60    # 기울기를 바꾸는 선
+TILT_L = 5        # 기울기 기준이 되는 최근 수익률 기간
+K_ABOVE = -0.25   # 선 위: 오른 것을 더 산다
+K_BELOW = +0.25   # 선 아래: 떨어진 것을 더 산다
 
 
 def fetch(refresh: bool) -> Dict[str, List[tuple]]:
@@ -79,29 +84,54 @@ def main() -> int:
         universe = CORE + list(HEDGE)
 
     print(f"판정일 기준  {max(px['SPY'])[0]}   (오늘 {datetime.now():%Y-%m-%d})")
-    print(f"규칙  {MA}일선 위면 보유, 아래면 그 몫만 현금. 신호는 21거래일마다.")
-    print(f"      비중 되맞춤은 126거래일 트랜치 (매일 목표와의 차이를 1/126씩)\n")
+    print(f"규칙  ① {MA}일선 위면 보유, 아래면 그 몫만 현금 (21거래일마다 재판정)")
+    print(f"      ② {MA_REGIME}일선 위 자산은 최근 {TILT_L}일 강세 쪽으로 k={K_ABOVE:+.2f},")
+    print(f"         아래 자산은 약세 쪽으로 k={K_BELOW:+.2f} 만큼 비중을 기울인다")
+    print(f"      ③ 되맞춤은 126거래일 트랜치 (매일 목표와의 차이를 1/126씩)\n")
 
-    print(f"  {'종목':<10}{'설명':<16}{'종가':>12}{'200일선':>12}"
-          f"{'괴리':>9}  신호")
-    print("  " + "-" * 68)
     on: Dict[str, bool] = {}
+    hot: Dict[str, bool] = {}
+    mom: Dict[str, float] = {}
     for s in universe:
         rows = px[s]
         if len(rows) < MA:
-            print(f"  {s:<10}{NAMES.get(s, ''):<16}{'표본 부족':>33}")
-            on[s] = True
+            on[s], hot[s] = True, True
             continue
         last = rows[-1][1]
-        ma = st.mean(v for _, v in rows[-MA:])
-        on[s] = last > ma
-        gap = (last / ma - 1) * 100
+        on[s] = last > st.mean(v for _, v in rows[-MA:])
+        hot[s] = last > st.mean(v for _, v in rows[-MA_REGIME:])
+        if len(rows) > TILT_L:
+            mom[s] = last / rows[-1 - TILT_L][1] - 1
+
+    # 기울기: 최근 TILT_L일 수익률을 자산들 사이에서 표준화한 뒤
+    #         60일선 위/아래에 따라 다른 부호로 기울인다
+    core = [s for s in universe if s in mom]
+    mu = st.mean(mom[s] for s in core)
+    sd = st.pstdev([mom[s] for s in core]) or 1.0
+    raw = {}
+    for s in universe:
+        z = (mom.get(s, mu) - mu) / sd
+        k = K_ABOVE if hot.get(s, True) else K_BELOW
+        raw[s] = base[s] * math.exp(max(-3.0, min(3.0, -k * z)))
+    tot = sum(raw.values())
+    sleeve = {s: v / tot for s, v in raw.items()}
+
+    print(f"  {'종목':<10}{'설명':<15}{'종가':>11}{'200일선':>9}{'60일선':>9}"
+          f"{'5일':>8}{'기울기':>8}  신호")
+    print("  " + "-" * 84)
+    for s in universe:
+        rows = px[s]
+        last = rows[-1][1]
+        g200 = (last / st.mean(v for _, v in rows[-MA:]) - 1) * 100
+        g60 = (last / st.mean(v for _, v in rows[-MA_REGIME:]) - 1) * 100
+        tilt = (sleeve[s] / base[s] - 1) * 100
         mark = "○ 보유" if on[s] else "● 현금"
-        print(f"  {s:<10}{NAMES.get(s, ''):<16}{last:>12,.2f}{ma:>12,.2f}"
-              f"{gap:>+8.1f}%  {mark}")
+        print(f"  {s:<10}{NAMES.get(s, ''):<15}{last:>11,.2f}{g200:>+8.1f}%"
+              f"{g60:>+8.1f}%{mom.get(s,0)*100:>+7.1f}%{tilt:>+7.1f}%  {mark}")
 
     tgt: Dict[str, float] = {}
-    for s, w in base.items():
+    for s in universe:
+        w = sleeve[s]
         if on.get(s, True):
             tgt[s] = tgt.get(s, 0) + w
         else:
@@ -120,9 +150,13 @@ def main() -> int:
            "decided_at": f"{datetime.now():%Y-%m-%d}",
            "as_of_close": max(px["SPY"])[0],
            "rule": {"signal": f"ma{MA}, 21거래일마다 재판정",
+                    "regime": f"ma{MA_REGIME}",
+                    "tilt": {"lookback": TILT_L, "k_above": K_ABOVE,
+                             "k_below": K_BELOW},
                     "rebalance": "126거래일 트랜치",
                     "cash": CASH},
-           "base_weights": base, "signal_on": on, "target_weights": tgt}
+           "base_weights": base, "signal_on": on, "regime_above": hot,
+           "sleeve_weights": sleeve, "target_weights": tgt}
     p = ROOT / "portfolios" / f"{out['id']}.json"
     p.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n",
                  encoding="utf-8")
