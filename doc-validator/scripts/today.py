@@ -37,8 +37,8 @@ NAMES = {"SPY": "S&P500", "QQQ": "나스닥100", "069500": "KODEX 200",
 MA = 200          # 보유/현금을 가르는 선
 MA_REGIME = 60    # 기울기를 바꾸는 선
 TILT_L = 5        # 기울기 기준이 되는 최근 수익률 기간
-K_ABOVE = -0.25   # 선 위: 오른 것을 더 산다
-K_BELOW = +0.25   # 선 아래: 떨어진 것을 더 산다
+K_ABOVE = -0.50   # 선 위: 오른 것을 더 산다
+K_BELOW = 0.00    # 선 아래: 기울이지 않는다 (기여가 없어 뺀다)
 
 
 def fetch(refresh: bool) -> Dict[str, List[tuple]]:
@@ -87,7 +87,7 @@ def main() -> int:
     print(f"규칙  ① {MA}일선 위면 보유, 아래면 그 몫만 현금 (21거래일마다 재판정)")
     print(f"      ② {MA_REGIME}일선 위 자산은 최근 {TILT_L}일 강세 쪽으로 k={K_ABOVE:+.2f},")
     print(f"         아래 자산은 약세 쪽으로 k={K_BELOW:+.2f} 만큼 비중을 기울인다")
-    print(f"      ③ 되맞춤은 126거래일 트랜치 (매일 목표와의 차이를 1/126씩)\n")
+    print(f"      ③ 되맞춤은 63거래일 트랜치 (매일 목표와의 차이를 1/63씩)\n")
 
     on: Dict[str, bool] = {}
     hot: Dict[str, bool] = {}
@@ -153,7 +153,7 @@ def main() -> int:
                     "regime": f"ma{MA_REGIME}",
                     "tilt": {"lookback": TILT_L, "k_above": K_ABOVE,
                              "k_below": K_BELOW},
-                    "rebalance": "126거래일 트랜치",
+                    "rebalance": "63거래일 트랜치",
                     "cash": CASH},
            "base_weights": base, "signal_on": on, "regime_above": hot,
            "sleeve_weights": sleeve, "target_weights": tgt}
