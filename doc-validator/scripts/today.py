@@ -35,9 +35,13 @@ NAMES = {"SPY": "S&P500", "QQQ": "나스닥100", "069500": "KODEX 200",
          "XLU": "유틸리티", "EFA": "선진국(미국 외)", "EEM": "신흥국",
          "BTC/USD": "비트코인", "DBMF": "관리선물", "BTAL": "고베타 숏",
          "UUP": "달러", "BIL": "현금 (원화 예금·CMA)"}
-MA = 250          # 보유/현금을 가르는 선 (200·300도 결과 동일)
+MA = 200          # 보유/현금을 가르는 선
 DD_WIN = 504      # 고점을 찾는 창 (2년)
-DD_THR = 0.10     # 그 고점 대비 -10% 이내여야 보유
+DD_THR = 0.20     # 그 고점 대비 -20% 이내여야 보유
+# 낙폭 조건은 초고변동성 자산에만 건다. 변동성이 크면 이동평균이 한참
+# 아래로 처져서 -40%를 빠져도 '추세 위'로 판정되는 사각지대가 생긴다.
+# 그 성질이 없는 자산에 걸면 급락장에서 너무 일찍 빠져 손해다(2008 검증).
+DD_ASSETS = {"BTC/USD"}
 MA_REGIME = 60    # 기울기를 바꾸는 선
 TILT_L = 5        # 기울기 기준이 되는 최근 수익률 기간
 K_ABOVE = -0.50   # 선 위: 오른 것을 더 산다
@@ -102,8 +106,9 @@ def main() -> int:
 
     print(f"판정일 기준  {max(px['SPY'])[0]}   (오늘 {datetime.now():%Y-%m-%d})")
     print(f"기준통화  원화 — 미국 자산은 환율을 곱해 계산한다")
-    print(f"규칙  ① {MA}일선 위 AND {DD_WIN}일 최고 대비 -{DD_THR*100:.0f}% 이내면 보유,")
-    print(f"         하나라도 안 되면 그 몫만 현금 (21거래일마다 재판정)")
+    print(f"규칙  ① {MA}일선 위면 보유. 단 {'·'.join(sorted(DD_ASSETS))}는")
+    print(f"         {DD_WIN}일 최고 대비 -{DD_THR*100:.0f}% 이내도 함께 만족해야 함")
+    print(f"         아니면 그 몫만 현금 (21거래일마다 재판정)")
     print(f"      ② {MA_REGIME}일선 위 자산은 최근 {TILT_L}일 강세 쪽으로 k={K_ABOVE:+.2f},")
     print(f"         아래 자산은 약세 쪽으로 k={K_BELOW:+.2f} 만큼 비중을 기울인다")
     print(f"      ③ 되맞춤은 21거래일 트랜치 (매일 목표와의 차이를 1/21씩)\n")
@@ -117,10 +122,12 @@ def main() -> int:
             on[s], hot[s] = True, True
             continue
         last = rows[-1][1]
-        peak = max(v for _, v in rows[-DD_WIN:]) if len(rows) >= DD_WIN \
-            else max(v for _, v in rows)
-        on[s] = (last > st.mean(v for _, v in rows[-MA:])
-                 and last / peak - 1 > -DD_THR)
+        ok = last > st.mean(v for _, v in rows[-MA:])
+        if s in DD_ASSETS:
+            peak = max(v for _, v in rows[-DD_WIN:]) if len(rows) >= DD_WIN \
+                else max(v for _, v in rows)
+            ok = ok and last / peak - 1 > -DD_THR
+        on[s] = ok
         hot[s] = last > st.mean(v for _, v in rows[-MA_REGIME:])
         if len(rows) > TILT_L:
             mom[s] = last / rows[-1 - TILT_L][1] - 1
@@ -138,7 +145,7 @@ def main() -> int:
     tot = sum(raw.values())
     sleeve = {s: v / tot for s, v in raw.items()}
 
-    print(f"  {'종목':<10}{'설명':<15}{'원화종가':>13}{'250일선':>9}{'고점대비':>9}{'60일선':>9}"
+    print(f"  {'종목':<10}{'설명':<15}{'원화종가':>13}{'200일선':>9}{'고점대비':>9}{'60일선':>9}"
           f"{'5일':>8}{'기울기':>8}  신호")
     print("  " + "-" * 84)
     for s in universe:
@@ -174,7 +181,8 @@ def main() -> int:
                     else "14종 균등, 추세 필터"),
            "decided_at": f"{datetime.now():%Y-%m-%d}",
            "as_of_close": max(px["SPY"])[0],
-           "rule": {"signal": f"ma{MA} AND 고점({DD_WIN}일) 대비 -{DD_THR*100:.0f}% 이내, 21거래일마다 재판정",
+           "rule": {"signal": (f"ma{MA}; {sorted(DD_ASSETS)}만 추가로 "
+                               f"고점({DD_WIN}일) 대비 -{DD_THR*100:.0f}% 이내"),
                     "regime": f"ma{MA_REGIME}",
                     "tilt": {"lookback": TILT_L, "k_above": K_ABOVE,
                              "k_below": K_BELOW},
