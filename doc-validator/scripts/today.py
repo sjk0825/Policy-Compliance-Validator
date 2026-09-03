@@ -48,6 +48,10 @@ DD_THR = 0.20     # 그 고점 대비 -20% 이내여야 보유
 # 아래로 처져서 -40%를 빠져도 '추세 위'로 판정되는 사각지대가 생긴다.
 # 그 성질이 없는 자산에 걸면 급락장에서 너무 일찍 빠져 손해다(2008 검증).
 DD_ASSETS = {"BTC/USD"}
+FX_MA = 200       # 현금 통화 판정: 원달러 200일 이동평균
+FX_GAP = -0.05    # 이격이 -5% 이하(달러가 싸면) 달러 예수금, 아니면 원화
+# 주식은 추세를 타지만 환율은 평균회귀한다. 달러는 위기 보험이므로
+# 쌀 때 사두는 편이 낫다. 추세로 다루면 두 창 모두에서 꼴찌였다.
 MA_REGIME = 60    # 기울기를 바꾸는 선
 TILT_L = 5        # 기울기 기준이 되는 최근 수익률 기간
 K_ABOVE = -0.50   # 선 위: 오른 것을 더 산다
@@ -78,7 +82,8 @@ def fetch(refresh: bool) -> Dict[str, List[tuple]]:
         with p.open(encoding="utf-8") as f:
             raw[s] = [(r["Date"], float(r["Close"])) for r in csv.DictReader(f)]
 
-    fx = dict(raw.pop("USD/KRW"))
+    fxraw = dict(raw.pop("USD/KRW"))
+    fx = fxraw
     dates = sorted({d for rows in raw.values() for d, _ in rows})
     filled, last = {}, None
     for d in dates:                      # 휴일은 직전 고시를 쓴다
@@ -90,6 +95,7 @@ def fetch(refresh: bool) -> Dict[str, List[tuple]]:
     for s, rows in raw.items():
         out[s] = [(d, v if s in KRW_ASSETS else v * filled[d])
                   for d, v in rows if d in filled]
+    globals()["FXRAW"] = fxraw
     return out
 
 
@@ -118,6 +124,13 @@ def main() -> int:
 
     print(f"판정일 기준  {max(px['SPY'])[0]}   (오늘 {datetime.now():%Y-%m-%d})")
     print(f"기준통화  원화 — 미국 자산은 환율을 곱해 계산한다")
+    fxs = [v for _, v in sorted(FXRAW.items())]
+    if len(fxs) >= FX_MA:
+        fxlast, fxavg = fxs[-1], st.mean(fxs[-FX_MA:])
+        gap = fxlast / fxavg - 1
+        usd_cash = gap <= FX_GAP
+        print(f"현금통화  원달러 {fxlast:,.0f}원, {FX_MA}일선 대비 {gap*100:+.1f}% → "
+              f"{'달러 예수금 (싸므로 보유)' if usd_cash else '원화 예금 (비싸므로 보유 안 함)'}")
     print(f"규칙  ① {MA}일선 위면 보유. 단 {'·'.join(sorted(DD_ASSETS))}는")
     print(f"         {DD_WIN}일 최고 대비 -{DD_THR*100:.0f}% 이내도 함께 만족해야 함")
     print(f"         아니면 그 몫만 현금 (21거래일마다 재판정)")
