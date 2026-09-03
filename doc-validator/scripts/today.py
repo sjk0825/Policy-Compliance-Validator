@@ -54,7 +54,7 @@ FX_GAP = -0.05    # 이격이 -5% 이하(달러가 싸면) 달러 예수금, 아
 # 쌀 때 사두는 편이 낫다. 추세로 다루면 두 창 모두에서 꼴찌였다.
 MA_REGIME = 60    # 기울기를 바꾸는 선
 TILT_L = 5        # 기울기 기준이 되는 최근 수익률 기간
-K_ABOVE = -0.50   # 선 위: 오른 것을 더 산다
+K_ABOVE = -0.25   # 선 위: 오른 것을 더 산다 (두 창 균형점)
 K_BELOW = 0.00    # 선 아래: 기울이지 않는다 (기여가 없어 뺀다)
 
 
@@ -108,7 +108,7 @@ def main() -> int:
     ap.add_argument("--exclude", default="", help="뺄 종목, 쉼표 구분 (예: BTC/USD)")
     ap.add_argument("--nav", type=float, default=None,
                     help="총 평가금액(원). 주면 오늘 실제 주문 금액을 뽑는다")
-    ap.add_argument("--step", type=int, default=21,
+    ap.add_argument("--step", type=int, default=63,
                     help="트랜치 분할수. 목표와의 차이를 1/step 만큼 좁힌다")
     args = ap.parse_args()
 
@@ -136,7 +136,7 @@ def main() -> int:
     print(f"         아니면 그 몫만 현금 (21거래일마다 재판정)")
     print(f"      ② {MA_REGIME}일선 위 자산은 최근 {TILT_L}일 강세 쪽으로 k={K_ABOVE:+.2f},")
     print(f"         아래 자산은 약세 쪽으로 k={K_BELOW:+.2f} 만큼 비중을 기울인다")
-    print(f"      ③ 되맞춤은 21거래일 트랜치 (매일 목표와의 차이를 1/21씩)\n")
+    print(f"      ③ 되맞춤은 63거래일 트랜치 (매일 목표와의 차이를 1/63씩)\n")
 
     on: Dict[str, bool] = {}
     hot: Dict[str, bool] = {}
@@ -211,7 +211,7 @@ def main() -> int:
                     "regime": f"ma{MA_REGIME}",
                     "tilt": {"lookback": TILT_L, "k_above": K_ABOVE,
                              "k_below": K_BELOW},
-                    "rebalance": "21거래일 트랜치",
+                    "rebalance": "63거래일 트랜치",
                     "cash": "USD 예수금", "basis": "KRW"},
            "base_weights": base, "signal_on": on, "regime_above": hot,
            "sleeve_weights": sleeve, "target_weights": tgt}
