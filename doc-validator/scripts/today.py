@@ -30,13 +30,17 @@ CORE = ["SPY", "QQQ", "069500", "TLT", "IEF", "GLD", "SLV",
         "DBC", "XLE", "XLU", "EFA", "EEM", "BTC/USD"]
 KRW_ASSETS = {"069500"}   # 이미 원화로 거래된다. 나머지는 환율을 곱한다
 HEDGE = {"DBMF": 0.15, "BTAL": 0.10, "UUP": 0.10}
-CASH = "BIL"        # 백테스트 대용물. 실제로는 원화 예금/CMA로 둔다
+CASH = "BIL"        # 실제로는 달러 예수금(또는 미국 단기채 MMF)으로 둔다.
+                    # 미국 ETF를 팔면 달러가 그대로 남으므로 환전이 필요 없고,
+                    # 나쁜 해마다 원화가 약해져 현금이 많은 시기에 환차익을 받는다.
+                    # 원화 예금으로 두면 샤프가 1.20으로 높지만 마이너스 해가
+                    # 1/14 생기고 환전 비용이 붙는다.
 NAMES = {"SPY": "S&P500", "QQQ": "나스닥100", "069500": "KODEX 200",
          "VNQ": "미국 리츠", "TLT": "미국 20년+ 국채", "IEF": "미국 7-10년 국채",
          "GLD": "금", "SLV": "은", "DBC": "원자재", "XLE": "에너지",
          "XLU": "유틸리티", "EFA": "선진국(미국 외)", "EEM": "신흥국",
          "BTC/USD": "비트코인", "DBMF": "관리선물", "BTAL": "고베타 숏",
-         "UUP": "달러", "BIL": "현금 (원화 예금·CMA)"}
+         "UUP": "달러", "BIL": "현금 (달러 예수금)"}
 MA = 200          # 보유/현금을 가르는 선
 DD_WIN = 504      # 고점을 찾는 창 (2년)
 DD_THR = 0.20     # 그 고점 대비 -20% 이내여야 보유
@@ -96,6 +100,10 @@ def main() -> int:
                     help="DBMF/BTAL/UUP 35%를 얹은 안정형")
     ap.add_argument("--held", default=None, help="현재 보유 비중 JSON")
     ap.add_argument("--exclude", default="", help="뺄 종목, 쉼표 구분 (예: BTC/USD)")
+    ap.add_argument("--nav", type=float, default=None,
+                    help="총 평가금액(원). 주면 오늘 실제 주문 금액을 뽑는다")
+    ap.add_argument("--step", type=int, default=21,
+                    help="트랜치 분할수. 목표와의 차이를 1/step 만큼 좁힌다")
     args = ap.parse_args()
 
     px = fetch(args.refresh)
@@ -191,7 +199,7 @@ def main() -> int:
                     "tilt": {"lookback": TILT_L, "k_above": K_ABOVE,
                              "k_below": K_BELOW},
                     "rebalance": "21거래일 트랜치",
-                    "cash": CASH, "basis": "KRW"},
+                    "cash": "USD 예수금", "basis": "KRW"},
            "base_weights": base, "signal_on": on, "regime_above": hot,
            "sleeve_weights": sleeve, "target_weights": tgt}
     p = ROOT / "portfolios" / f"{out['id']}.json"
@@ -201,16 +209,39 @@ def main() -> int:
 
     if args.held:
         held = json.loads(Path(args.held).read_text(encoding="utf-8"))
-        print(f"\n\n현재 보유에서의 차이\n")
-        print(f"  {'종목':<10}{'현재':>9}{'목표':>9}{'조정':>10}")
-        print("  " + "-" * 40)
+        tot = sum(held.values())
+        if tot > 0:
+            held = {s: v / tot for s, v in held.items()}
+        print(f"\n\n오늘 주문 — 목표와의 차이를 1/{args.step} 만큼만 좁힌다\n")
+        head = f"  {'종목':<10}{'설명':<16}{'현재':>8}{'목표':>8}{'차이':>9}{'오늘':>9}"
+        if args.nav:
+            head += f"{'오늘 금액(원)':>16}"
+        print(head)
+        print("  " + "-" * (len(head) + 4))
+        buys = sells = 0.0
         for s in sorted(set(held) | set(tgt),
                         key=lambda x: -(tgt.get(x, 0) - held.get(x, 0))):
-            d = tgt.get(s, 0) - held.get(s, 0)
-            if abs(d) < 0.0005:
+            gap = tgt.get(s, 0) - held.get(s, 0)
+            step = gap / args.step
+            if abs(step) < 0.00005:
                 continue
-            print(f"  {s:<10}{held.get(s,0)*100:>8.2f}%{tgt.get(s,0)*100:>8.2f}%"
-                  f"{d*100:>+9.2f}%p")
+            row = (f"  {s:<10}{NAMES.get(s, ''):<16}{held.get(s,0)*100:>7.2f}%"
+                   f"{tgt.get(s,0)*100:>7.2f}%{gap*100:>+8.2f}%{step*100:>+8.2f}%")
+            if args.nav:
+                amt = step * args.nav
+                row += f"{amt:>+15,.0f}"
+                (buys := buys) if amt < 0 else None
+                if amt > 0:
+                    buys += amt
+                else:
+                    sells += -amt
+            print(row)
+        if args.nav:
+            print("  " + "-" * 60)
+            print(f"  오늘 매수 합계 {buys:>14,.0f}원   매도 합계 {sells:>14,.0f}원")
+        print(f"\n  내일도 같은 방식이다. 시세가 바뀌면 목표가 조금 움직이므로")
+        print(f"  다시 계산해 그날의 차이를 1/{args.step} 만큼 좁힌다.")
+        print(f"  신호(보유/현금)는 21거래일마다만 다시 판정한다.")
     return 0
 
 
