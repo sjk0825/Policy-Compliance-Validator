@@ -24,7 +24,9 @@ from typing import Dict, List
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "fixtures" / "live"
-CORE = ["SPY", "QQQ", "069500", "VNQ", "TLT", "IEF", "GLD", "SLV",
+# VNQ(미국 리츠)는 뺐다. SPY와 상관이 높고 금리에도 민감해 TLT·IEF와도
+# 겹친다. 빼면 2013~2026과 2008~2026 두 창 모두에서 전 지표가 좋아진다.
+CORE = ["SPY", "QQQ", "069500", "TLT", "IEF", "GLD", "SLV",
         "DBC", "XLE", "XLU", "EFA", "EEM", "BTC/USD"]
 KRW_ASSETS = {"069500"}   # 이미 원화로 거래된다. 나머지는 환율을 곱한다
 HEDGE = {"DBMF": 0.15, "BTAL": 0.10, "UUP": 0.10}
@@ -93,16 +95,18 @@ def main() -> int:
     ap.add_argument("--hedge", action="store_true",
                     help="DBMF/BTAL/UUP 35%를 얹은 안정형")
     ap.add_argument("--held", default=None, help="현재 보유 비중 JSON")
+    ap.add_argument("--exclude", default="", help="뺄 종목, 쉼표 구분 (예: BTC/USD)")
     args = ap.parse_args()
 
     px = fetch(args.refresh)
-    universe = list(CORE)
-    base = {s: 1.0 / len(CORE) for s in CORE}
+    drop = {x.strip() for x in args.exclude.split(",") if x.strip()}
+    universe = [s for s in CORE if s not in drop]
+    base = {s: 1.0 / len(universe) for s in universe}
     if args.hedge:
         h = sum(HEDGE.values())
-        base = {s: (1 - h) / len(CORE) for s in CORE}
+        base = {s: (1 - h) / len(universe) for s in universe}
         base.update(HEDGE)
-        universe = CORE + list(HEDGE)
+        universe = universe + list(HEDGE)
 
     print(f"판정일 기준  {max(px['SPY'])[0]}   (오늘 {datetime.now():%Y-%m-%d})")
     print(f"기준통화  원화 — 미국 자산은 환율을 곱해 계산한다")
